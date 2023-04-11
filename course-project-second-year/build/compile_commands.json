@@ -1,0 +1,12 @@
+[
+{
+  "directory": "C:/Users/Polina/Desktop/course-project-second-year/build",
+  "command": "C:\\Programs\\MinGW\\bin\\c++.exe -std=gnu++17 -o CMakeFiles\\course_project.dir\\main.cpp.obj -c C:\\Users\\Polina\\Desktop\\course-project-second-year\\main.cpp",
+  "file": "C:\\Users\\Polina\\Desktop\\course-project-second-year\\main.cpp"
+},
+{
+  "directory": "C:/Users/Polina/Desktop/course-project-second-year/build",
+  "command": "C:\\Programs\\MinGW\\bin\\c++.exe -std=gnu++17 -o CMakeFiles\\course_project.dir\\types\\complex.cpp.obj -c C:\\Users\\Polina\\Desktop\\course-project-second-year\\types\\complex.cpp",
+  "file": "C:\\Users\\Polina\\Desktop\\course-project-second-year\\types\\complex.cpp"
+}
+]

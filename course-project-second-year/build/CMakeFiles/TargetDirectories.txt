@@ -1,0 +1,3 @@
+C:/Users/Polina/Desktop/course-project-second-year/build/CMakeFiles/course_project.dir
+C:/Users/Polina/Desktop/course-project-second-year/build/CMakeFiles/edit_cache.dir
+C:/Users/Polina/Desktop/course-project-second-year/build/CMakeFiles/rebuild_cache.dir
