@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include "complex.h"
 
 #include <math.h>
@@ -6,139 +8,131 @@
 #include <iomanip>
 #include <string>
 
+#include "parser.h"
+
 namespace svd_computation {
-Complex::Complex() : _Re(0), _Im(0) {}
-Complex::Complex(int x) : _Re(x), _Im(0) {}
-Complex::Complex(long long x) : _Re(x), _Im(0) {}
-Complex::Complex(double x) : _Re(x), _Im(0) {}
-Complex::Complex(long double x) : _Re(x), _Im(0) {}
+Complex::Complex(int x) : Re_(x), Im_(0) {}
+Complex::Complex(long long x) : Re_(x), Im_(0) {}
+Complex::Complex(double x) : Re_(x), Im_(0) {}
+Complex::Complex(long double x) : Re_(x), Im_(0) {}
 
-Complex::Complex(int Re, int Im) : _Re(Re), _Im(Im) {}
-Complex::Complex(long long Re, long long Im) : _Re(Re), _Im(Im) {}
-Complex::Complex(double Re, double Im) : _Re(Re), _Im(Im) {}
-Complex::Complex(long double Re, long double Im) : _Re(Re), _Im(Im) {}
+Complex::Complex(int Re, int Im) : Re_(Re), Im_(Im) {}
+Complex::Complex(long long Re, long long Im) : Re_(Re), Im_(Im) {}
+Complex::Complex(double Re, double Im) : Re_(Re), Im_(Im) {}
+Complex::Complex(long double Re, long double Im) : Re_(Re), Im_(Im) {}
 
-Complex Complex::get_complex_by_exp_form(long double abs, long double arg) {
+Complex Complex::exp_form(long double abs, long double arg) noexcept {
     return Complex(abs * cos(arg), abs * sin(arg));
 }
 
-Complex::Type Complex::Re() const {
-    return _Re;
+Complex::Type Complex::Re() const noexcept {
+    return Re_;
 }
-Complex::Type Complex::Im() const {
-    return _Im;
-}
-
-Complex Complex::operator+(const Complex& rhs) const {
-    return Complex(_Re + rhs._Re, _Im + rhs._Im);
+Complex::Type Complex::Im() const noexcept {
+    return Im_;
 }
 
-Complex& Complex::operator+=(const Complex& rhs) {
-    *this = *this + rhs;
+Complex& Complex::operator+=(const Complex& rhs) noexcept {
+    *this = Complex(Re_ + rhs.Re_, Im_ + rhs.Im_);
     return *this;
 }
 
-Complex Complex::operator-(const Complex& rhs) const {
-    return Complex(_Re - rhs._Re, _Im - rhs._Im);
+Complex operator+(const Complex& lhs, const Complex& rhs) noexcept {
+    Complex result = lhs;
+    result += rhs;
+    return result;
 }
 
-Complex& Complex::operator-=(const Complex& rhs) {
-    *this = *this - rhs;
+Complex& Complex::operator-=(const Complex& rhs) noexcept {
+    *this = Complex(Re_ - rhs.Re_, Im_ - rhs.Im_);
     return *this;
 }
 
-Complex Complex::operator*(const Complex& rhs) const {
-    return Complex(_Re * rhs._Re - _Im * rhs._Im, _Re * rhs._Im + _Im * rhs._Re);
+Complex operator-(const Complex& lhs, const Complex& rhs) noexcept {
+    Complex result = lhs;
+    result -= rhs;
+    return result;
 }
 
-Complex& Complex::operator*=(const Complex& rhs) {
-    *this = *this * rhs;
+Complex& Complex::operator*=(const Complex& rhs) noexcept {
+    *this = Complex(Re_ * rhs.Re_ - Im_ * rhs.Im_, Re_ * rhs.Im_ + Im_ * rhs.Re_);
     return *this;
 }
 
-Complex Complex::operator/(const Complex& rhs) const {
-    Type abs_rhs = rhs._Re * rhs._Re + rhs._Im * rhs._Im;
+Complex operator*(const Complex& lhs, const Complex& rhs) noexcept {
+    Complex result = lhs;
+    result *= rhs;
+    return result;
+}
 
-    if (abs_rhs == 0.0l) {
-        throw std::invalid_argument("Division by zero");
+Complex& Complex::operator/=(const Complex& rhs) noexcept {
+    Type abs_rhs = rhs.Re_ * rhs.Re_ + rhs.Im_ * rhs.Im_;
+    *this = Complex((Re_ * rhs.Re_ + Im_ * rhs.Im_) / abs_rhs, (Re_ * rhs.Im_ - Im_ * rhs.Re_) / abs_rhs);
+    if (isnan(Re_) || isnan(Im_)) {
+        *this = Complex(NAN, NAN);
     }
-
-    return Complex((_Re * rhs._Re + _Im * rhs._Im) / abs_rhs, (_Re * rhs._Im - _Im * rhs._Re) / abs_rhs);
-}
-
-Complex& Complex::operator/=(const Complex& rhs) {
-    *this = *this / rhs;
     return *this;
 }
 
-Complex Complex::operator-() const {
-    return Complex(-_Re, -_Im);
+Complex operator/(const Complex& lhs, const Complex& rhs) noexcept {
+    Complex result = lhs;
+    result *= rhs;
+    return result;
 }
 
-bool Complex::operator==(const Complex& other) const {
-    return (_Re == other._Re && _Im == other._Im);
+Complex Complex::operator-() const noexcept {
+    return Complex(-Re_, -Im_);
 }
 
-long double abs(const Complex& x) {
-    return sqrtf(x.Re() * x.Re() + x.Im() * x.Im());
+bool operator==(const Complex& lhs, const Complex& rhs) noexcept {
+    return (lhs.Re_ == rhs.Re_ && lhs.Im_ == rhs.Im_);
 }
 
-long double arg(const Complex& x) {
-    return atan2(x.Im(), x.Re());
+bool operator!=(const Complex& lhs, const Complex& rhs) noexcept {
+    return !(rhs == lhs);
 }
 
-Complex conjugate(const Complex& x) {
-    return Complex(x.Re(), -x.Im());
+long double Complex::abs() const noexcept {
+    return sqrtf(Re_ * Re_ + Im_ * Im_);
 }
 
-Complex sqrt(const Complex& x) {
-    long double abs_x = abs(x);
-    long double arg_x = arg(x);
-    if (arg_x < 0) {
-        arg_x += 2 * M_PI;
+long double abs(const Complex& num) {
+    return num.abs();
+}
+
+long double Complex::arg() const noexcept {
+    return atan2(Im_, Re_);
+}
+
+long double arg(const Complex& num) {
+    return num.arg();
+}
+
+Complex Complex::conjugate() const noexcept {
+    return Complex(Re_, -Im_);
+}
+
+Complex conjugate(const Complex& num) {
+    return num.conjugate();
+}
+
+Complex sqrt(const Complex& num) {
+    long double abs_num = abs(num);
+    long double arg_num = arg(num);
+    if (arg_num < 0) {
+        arg_num += 2 * M_PI;
     }
-    return Complex::get_complex_by_exp_form(sqrtf(abs_x), arg_x / 2.0l);
+    return Complex::exp_form(sqrtf(abs_num), arg_num / 2.0l);
 }
 
-std::istream& operator>>(std::istream& in, Complex& x) {
+std::istream& operator>>(std::istream& in, Complex& num) noexcept {
     std::string buf;
     in >> buf;
-
-    std::string::size_type sz;
-
-    long double num1, num2;
-
-    try {
-        num1 = std::stold(buf, &sz);
-    } catch (std::invalid_argument& e) {
-        throw std::invalid_argument("Incorrect format of complex number " + buf);
-    } catch (std::out_of_range& e) {
-        throw std::out_of_range("Out of range in complex number " + buf);
-    }
-    if (sz == buf.size()) {
-        x = num1;
-        return in;
-    }
-
-    if (buf[sz] == '*' || buf[sz] == 'i') {
-        x = Complex(0.0l, num1);
-        return in;
-    }
-
-    try {
-        num2 = std::stold(buf.substr(sz), &sz);
-    } catch (std::invalid_argument& e) {
-        throw std::invalid_argument("Incorrect format of complex number " + buf);
-    } catch (std::out_of_range& e) {
-        throw std::out_of_range("Out of range in complex number " + buf);
-    }
-
-    x = Complex(num1, num2);
-
+    num = details::Parser().parse(buf);
     return in;
 }
 
-std::ostream& operator<<(std::ostream& out, const Complex& x) {
+std::ostream& operator<<(std::ostream& out, const Complex& x) noexcept {
     out << std::fixed << std::setprecision(6);
     long double eps = 1e-6;
     if (std::fabs(x.Re()) < eps && std::fabs(x.Im()) < eps) {

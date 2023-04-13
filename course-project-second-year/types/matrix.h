@@ -5,220 +5,240 @@
 #include <sstream>
 #include <vector>
 
-#include "vector_and_matrix.h"
+#include "vector.h"
 
 namespace svd_computation {
 template <typename Type>
 class Matrix {
+    using IndexType = int64_t;
+
    public:
-    Matrix() {}
+    Matrix() = default;
 
-    Matrix(Type lamda, size_t n)
-        : _data(std::vector<std::vector<Type>>(n, std::vector<Type>(n, 0))), _height(n), _width(n) {
-        for (size_t ind = 0; ind < n; ind++) {
-            _data[ind][ind] = lamda;
+    Matrix(std::initializer_list<std::initializer_list<Type>> data) : height_(data.size()) {
+        if (data.size() == 0) {
+            return;
         }
-    }
-
-    Matrix(std::vector<std::vector<Type>> data) : _data(data), _height(data.size()) {
-        if (data.size() > 0) {
-            _width = data[0].size();
-        } else {
-            _width = 0;
-        }
-    }
-
-    Matrix(Vector<Type> v)
-        : _data(std::vector<std::vector<Type>>(v.size(), std::vector<Type>(1, 0))), _height(v.size()), _width(1) {
-        for (size_t ind = 0; ind < _height; ind++) {
-            _data[ind][0] = v[ind];
-        }
-    }
-
-    explicit Matrix(size_t height, size_t width) : _height(height), _width(width) {
-        _data = std::vector<std::vector<Type>>(height, std::vector<Type>(width, Type()));
-    }
-
-    size_t get_height() const {
-        return _height;
-    }
-
-    size_t get_width() const {
-        return _width;
-    }
-
-    std::vector<Type>& operator[](size_t ind) {
-        return _data[ind];
-    }
-
-    const std::vector<Type>& operator[](size_t ind) const {
-        return (const std::vector<Type>&)_data[ind];
-    }
-
-    Matrix operator+(const Matrix& rhs) const {
-        if (rhs._height != _height || rhs._width != _width) {
-            throw std::invalid_argument("Incorrected sizes in matrix summation");
-        }
-
-        Matrix ans(_data);
-        for (size_t i = 0; i < _height; i++) {
-            for (size_t j = 0; j < _width; j++) {
-                ans[i][j] += rhs[i][j];
+        size_t width = data.begin()[0].size();
+        data_ = std::vector<Type>(data.size() * width, Type(0));
+        for (size_t row = 0; row < data.size(); ++row) {
+            assert(data.begin()[row].size() == width);
+            for (size_t column = 0; column < width; ++column) {
+                data_[row * width + column] = data.begin()[row].begin()[column];
             }
         }
-        return ans;
     }
 
-    Matrix& operator+=(const Matrix& rhs) {
-        *this = *this + rhs;
+    Matrix(size_t height, size_t width) : height_(height) {
+        data_ = std::vector<Type>(height * width, Type(0));
+    }
+
+    inline size_t height() const noexcept {
+        return height_;
+    }
+
+    inline size_t width() const noexcept {
+        return data_.size() / height_;
+    }
+
+    Type& operator()(IndexType row, IndexType column) noexcept {
+        assert(row < height_ && row >= 0 && column >= 0 && column <= (*this).width());
+        return data_[row * (*this).width() + column];
+    }
+
+    const Type& operator()(IndexType row, IndexType column) const noexcept {
+        assert(row < height_ && row >= 0 && column >= 0 && column <= (*this).width());
+        return data_[row * (*this).width() + column];
+    }
+
+    static Matrix ones(size_t n) {
+        Matrix result(n, n);
+        for (size_t i = 0; i < n; ++i) {
+            result(i, i) = Type(1);
+        }
+        return result;
+    }
+
+    static Matrix diagonal(std::initializer_list<Type> diagonal) noexcept {
+        Matrix result(diagonal.size(), diagonal.size());
+        for (size_t ind = 0; ind < diagonal.size(); ++ind) {
+            result(ind, ind) = diagonal.begin()[ind];
+        }
+    }
+
+    static Matrix from_vector(const Vector<Type>& v) noexcept {
+        if (v.is_horizontal()) {
+            Matrix result = Matrix(1, v.size());
+            for (size_t ind = 0; ind < v.size(); ++ind) {
+                result(0, ind) = v[ind];
+            }
+            return result;
+        }
+
+        Matrix result = Matrix(v.size(), 1);
+        for (size_t ind = 0; ind < v.size(); ++ind) {
+            result(ind, 0) = v[ind];
+        }
+        return result;
+    }
+
+    Matrix& operator+=(const Matrix& rhs) noexcept {
+        assert(rhs.height_ == height_ && rhs.width() == (*this).width());
+        for (size_t ind = 0; ind < data_.size(); ++ind) {
+            data_[ind] += rhs.data_[ind];
+        }
         return *this;
     }
 
-    Matrix operator-(const Matrix& rhs) const {
-        if (rhs._height != _height || rhs._width != _width) {
-            throw std::invalid_argument("Incorrected sizes in matrix subtraction");
-        }
-
-        Matrix ans(_data);
-        for (size_t i = 0; i < _height; i++) {
-            for (size_t j = 0; j < _width; j++) {
-                ans[i][j] -= rhs[i][j];
-            }
-        }
-        return ans;
+    friend Matrix operator+(const Matrix& lhs, const Matrix& rhs) noexcept {
+        Matrix result = lhs;
+        result += rhs;
+        return result;
     }
 
-    Matrix& operator-=(const Matrix& rhs) {
-        *this = *this - rhs;
+    Matrix& operator-=(const Matrix& rhs) noexcept {
+        assert(rhs.height_ == height_ && rhs.width() == (*this).width());
+        for (size_t ind = 0; ind < data_.size(); ++ind) {
+            data_[ind] -= rhs.data_[ind];
+        }
         return *this;
     }
 
-    Matrix operator*(const Matrix& rhs) const {
-        if (rhs._height != _width) {
-            throw std::invalid_argument("Incorrected sizes in matrix multiplication");
-        }
+    friend Matrix operator-(const Matrix& lhs, const Matrix& rhs) noexcept {
+        Matrix result = lhs;
+        result -= rhs;
+        return result;
+    }
 
-        Matrix ans(_height, rhs._width);
-        for (size_t i = 0; i < _height; i++) {
-            for (size_t j = 0; j < rhs._width; j++) {
-                ans[i][j] = 0;
-                for (size_t k = 0; k < _width; k++) {
-                    ans[i][j] += _data[i][k] * rhs[k][j];
+    Matrix& operator*=(const Matrix& rhs) noexcept {
+        assert(rhs.height_ != (*this).width());
+
+        Matrix result(height_, rhs.width());
+        for (size_t row = 0; row < height_; ++row) {
+            for (size_t column = 0; column < rhs.width(); ++column) {
+                for (size_t k = 0; k < rhs.height_; k++) {
+                    result(row, column) += (*this)(row, k) * rhs(k, column);
                 }
             }
         }
-        return ans;
+        *this = result;
     }
 
-    Matrix operator*(const Vector<Type>& rhs) {
-        if (rhs.sisze() != _width) {
-            throw std::invalid_argument("Incorrected sizes in matrix ans vector multiplication");
-        }
+    friend Matrix operator*(const Matrix& lhs, const Matrix& rhs) noexcept {
+        return lhs * rhs;
+    }
 
-        Vector<Type> ans(0, rhs.size());
-        for (size_t i = 0; i < _height; i++) {
-            for (size_t j = 0; j < _width; j++) {
-                ans[i] += _data[i][j] * rhs[j];
+    friend Vector<Type> operator*(const Matrix& lhs, const Vector<Type>& rhs) noexcept {
+        assert(rhs.size() == lhs.width());
+        assert(rhs.is_vertical());
+
+        Vector<Type> result(0, rhs.size());
+        for (size_t row = 0; row < lhs.height(); ++row) {
+            for (size_t column = 0; column < rhs.size(); ++column) {
+                result[row] += lhs(row, column) * rhs[column];
             }
         }
-        return ans;
+        return result;
     }
 
-    Matrix& operator*=(const Matrix& rhs) {
-        *this = *this * rhs;
-        return *this;
-    }
+    friend Vector<Type> operator*(const Vector<Type>& lhs, const Matrix& rhs) noexcept {
+        assert(lhs.size() == rhs.height());
+        assert(lhs.is_horizontal());
 
-    Matrix& operator*=(const Type& rhs) {
-        *this = rhs * (*this);
-        return *this;
-    }
-
-    Matrix& operator/=(const Type& rhs) {
-        *this = *this / rhs;
-        return *this;
-    }
-
-    Matrix T() const {
-        Matrix ans(_width, _height);
-        for (size_t i = 0; i < _width; i++) {
-            for (size_t j = 0; j < _height; j++) {
-                ans[i][j] = _data[j][i];
+        Vector<Type> result(0, rhs.size());
+        result.transpose();
+        for (size_t column = 0; column < rhs.width(); ++column) {
+            for (size_t row = 0; row < lhs.size(); ++row) {
+                result[column] += rhs[row] * rhs(row, column);
             }
         }
-        return ans;
+        return result;
+    }
+
+    Matrix& operator*=(const Type& rhs) noexcept {
+        for (size_t row = 0; row < height_; ++row) {
+            for (size_t column = 0; column < (*this).width(); ++column) {
+                (*this)(row, column) *= rhs;
+            }
+        }
+        return *this;
+    }
+
+    friend Matrix operator*(const Type& lhs, const Matrix& rhs) noexcept {
+        Matrix result = rhs;
+        result *= lhs;
+        return result;
+    }
+
+    Matrix& operator/=(const Type& rhs) noexcept {
+        for (size_t row = 0; row < height_; row++) {
+            for (size_t column = 0; column < (*this).width(); column++) {
+                (*this)(row, column) /= rhs;
+            }
+        }
+        return *this;
+    }
+
+    friend Matrix operator/(const Matrix& lhs, const Type& rhs) noexcept {
+        Matrix result = lhs;
+        result /= rhs;
+        return result;
+    }
+
+    Matrix transpose() const noexcept {
+        Matrix result((*this).width(), height_);
+        for (size_t row = 0; row < (*this).width(); ++row) {
+            for (size_t column = 0; column < height_; ++column) {
+                result(row, column) = data_(column, row);
+            }
+        }
+        return result;
+    }
+
+    friend std::istream& operator>>(std::istream& in, Matrix<Type>& A) noexcept {
+        size_t height, width;
+        Matrix<Type> res(height, width);
+        for (size_t i = 0; i < height; i++) {
+            for (size_t j = 0; j < width; j++) {
+                in >> res(i, j);
+            }
+        }
+        A = res;
+        return in;
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const Matrix<Type>& A) noexcept {
+        size_t height = A.height();
+        size_t width = A.width();
+        std::vector<std::vector<std::string>> A_str(height, std::vector<std::string>(width, ""));
+        size_t max_len = 0;
+        for (size_t i = 0; i < height; i++) {
+            for (size_t j = 0; j < width; j++) {
+                std::stringstream ss;
+                ss << A(i, j);
+                A_str[i][j] = ss.str();
+                max_len = std::max(max_len, ss.str().size());
+            }
+        }
+        for (size_t i = 0; i < height; i++) {
+            for (size_t j = 0; j < width; j++) {
+                out << A_str[i][j];
+                for (int _ = 0; _ + A_str[i][j].size() < max_len; _++) {
+                    out << " ";
+                }
+                if (j + 1 < width) {
+                    out << " ";
+                }
+            }
+            if (i + 1 < height) {
+                out << "\n";
+            }
+        }
+        return out;
     }
 
    private:
-    std::vector<std::vector<Type>> _data;
-    size_t _height;
-    size_t _width;
+    std::vector<Type> data_;
+    size_t height_ = 0;
 };
-
-template <typename Type>
-Matrix<Type> operator*(const Type& lambda, const Matrix<Type>& A) {
-    Matrix<Type> ans = A;
-    for (size_t i = 0; i < ans.get_height(); i++) {
-        for (size_t j = 0; j < ans.get_width(); j++) {
-            ans[i][j] *= lambda;
-        }
-    }
-    return ans;
-}
-
-template <typename Type>
-Matrix<Type> operator*(const Matrix<Type>& A, const Type& lambda) {
-    Matrix<Type> ans = A;
-    for (size_t i = 0; i < ans.get_height(); i++) {
-        for (size_t j = 0; j < ans.get_width(); j++) {
-            ans[i][j] /= lambda;
-        }
-    }
-    return ans;
-}
-
-template <typename Type>
-std::istream& operator>>(std::istream& in, Matrix<Type>& A) {
-    size_t height, width;
-    Matrix<Type> res(height, width);
-    for (size_t i = 0; i < height; i++) {
-        for (size_t j = 0; j < width; j++) {
-            in >> res[i][j];
-        }
-    }
-    A = res;
-    return in;
-}
-
-template <typename Type>
-std::ostream& operator<<(std::ostream& out, const Matrix<Type>& A) {
-    size_t height = A.get_height();
-    size_t width = A.get_width();
-    std::vector<std::vector<std::string>> A_str(height, std::vector<std::string>(width, ""));
-    size_t max_len = 0;
-    for (size_t i = 0; i < height; i++) {
-        for (size_t j = 0; j < width; j++) {
-            std::stringstream ss;
-            ss << A[i][j];
-            A_str[i][j] = ss.str();
-            max_len = std::max(max_len, ss.str().size());
-        }
-    }
-    for (size_t i = 0; i < height; i++) {
-        for (size_t j = 0; j < width; j++) {
-            out << A_str[i][j];
-            for (int _ = 0; _ + A_str[i][j].size() < max_len; _++) {
-                out << " ";
-            }
-            if (j + 1 < width) {
-                out << " ";
-            }
-        }
-        if (i + 1 < height) {
-            out << "\n";
-        }
-    }
-    return out;
-}
-
 }  // namespace svd_computation

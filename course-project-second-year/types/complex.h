@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 
 namespace svd_computation {
@@ -5,7 +7,7 @@ class Complex {
     using Type = long double;
 
    public:
-    Complex();
+    Complex() = default;
     Complex(int);
     Complex(long long);
     Complex(double);
@@ -16,33 +18,38 @@ class Complex {
     Complex(double, double);
     Complex(long double, long double);
 
-    static Complex get_complex_by_exp_form(long double, long double);
+    static Complex exp_form(long double, long double) noexcept;
 
-    Type Re() const;
-    Type Im() const;
+    Type Re() const noexcept;
+    Type Im() const noexcept;
 
-    Complex operator+(const Complex&) const;
-    Complex& operator+=(const Complex&);
-    Complex operator-(const Complex&) const;
-    Complex& operator-=(const Complex&);
-    Complex operator*(const Complex&) const;
-    Complex& operator*=(const Complex&);
-    Complex operator/(const Complex&) const;
-    Complex& operator/=(const Complex&);
-    Complex operator-() const;
-    bool operator==(const Complex&) const;
+    friend Complex operator+(const Complex&, const Complex&) noexcept;
+    Complex& operator+=(const Complex&) noexcept;
+    friend Complex operator-(const Complex&, const Complex&) noexcept;
+    Complex& operator-=(const Complex&) noexcept;
+    friend Complex operator*(const Complex&, const Complex&) noexcept;
+    Complex& operator*=(const Complex&) noexcept;
+    friend Complex operator/(const Complex&, const Complex&) noexcept;
+    Complex& operator/=(const Complex&) noexcept;
+    Complex operator-() const noexcept;
+    friend bool operator==(const Complex&, const Complex&) noexcept;
+    friend bool operator!=(const Complex&, const Complex&) noexcept;
+
+    long double abs() const noexcept;
+    long double arg() const noexcept;
+    Complex conjugate() const noexcept;
+
+    friend std::istream& operator>>(std::istream&, Complex&) noexcept;
+    friend std::ostream& operator<<(std::ostream&, const Complex&) noexcept;
 
    private:
-    Type _Re;
-    Type _Im;
+    Type Re_ = 0.;
+    Type Im_ = 0.;
 };
 
 long double abs(const Complex&);
 long double arg(const Complex&);
 Complex conjugate(const Complex&);
 Complex sqrt(const Complex&);
-
-std::istream& operator>>(std::istream&, Complex&);
-std::ostream& operator<<(std::ostream&, const Complex&);
 
 }  // namespace svd_computation
