@@ -1,7 +1,11 @@
 #pragma once
 
+#include <math.h>
+
 #include <cassert>
-#include <iostream>
+#include <vector>
+
+#include "complex.h"
 
 namespace svd_computation {
 template <typename Type>
@@ -11,11 +15,12 @@ class Vector {
    public:
     Vector() = default;
 
-    explicit Vector(size_t length) : data_(length, Type(0)), is_horizontal_(false) {}
+    explicit Vector(size_t length, bool horizontal = false) : data_(length, Type(0)), is_horizontal_(horizontal) {}
 
-    Vector(const Type& element, size_t length) : data_(length, Type(element)), is_horizontal_(false) {}
+    Vector(const Type& element, size_t length, bool horizontal = false)
+        : data_(length, Type(element)), is_horizontal_(horizontal) {}
 
-    Vector(std::initializer_list<Type> list) : data_(list), is_horizontal_(false) {}
+    Vector(std::initializer_list<Type> list, bool horizontal = false) : data_(list), is_horizontal_(horizontal) {}
 
     size_t size() const noexcept {
         return data_.size();
@@ -116,7 +121,13 @@ class Vector {
     }
 
     Vector transpose() const noexcept {
-        is_horizontal_ = true;
+        Vector res = *this;
+        res.is_horizontal_ = true;
+        return res;
+    }
+
+    bool empty() const noexcept {
+        return data_.empty();
     }
 
     friend std::istream& operator>>(std::istream& in, Vector<Type>& v) noexcept {
@@ -144,4 +155,46 @@ class Vector {
     std::vector<Type> data_;
     bool is_horizontal_;
 };
+
+template <typename Type>
+Type dot_product(Vector<Type> lhs, Vector<Type> rhs) noexcept;
+
+template <>
+long double dot_product(Vector<long double> lhs, Vector<long double> rhs) noexcept {
+    assert(lhs.size() == rhs.size());
+    assert(lhs.is_horizontal());
+    assert(rhs.is_vertical());
+    long double res = 0;
+    for (size_t ind = 0; ind < lhs.size(); ++ind) {
+        res += lhs[ind] * rhs[ind];
+    }
+    return res;
+}
+
+template <>
+Complex dot_product(Vector<Complex> lhs, Vector<Complex> rhs) noexcept {
+    assert(lhs.size() == rhs.size());
+    assert(lhs.is_horizontal());
+    assert(rhs.is_vertical());
+    Complex res = 0;
+    for (size_t ind = 0; ind < lhs.size(); ++ind) {
+        res += lhs[ind] * rhs[ind].conjugate();
+    }
+    return res;
+}
+
+template <typename Type>
+long double abs(Vector<Type> v) noexcept;
+
+template <>
+long double abs(Vector<long double> v) noexcept {
+    return sqrtl(dot_product<long double>(v.transpose(), v));
+}
+
+template <>
+long double abs(Vector<Complex> v) noexcept {
+    long double res = dot_product<Complex>(v.transpose(), v).Re();
+    return sqrtl(res);
+}
+
 }  // namespace svd_computation

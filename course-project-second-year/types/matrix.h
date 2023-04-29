@@ -185,6 +185,19 @@ class Matrix {
         return result;
     }
 
+    Matrix& operator-() const {
+        for (size_t row = 0; row < height_; row++) {
+            for (size_t column = 0; column < (*this).width(); column++) {
+                (*this)(row, column) = -(*this)(row, column);
+            }
+        }
+        return *this;
+    }
+
+    bool empty() const noexcept {
+        return data_.empty();
+    }
+
     Matrix transpose() const noexcept {
         Matrix result((*this).width(), height_);
         for (size_t row = 0; row < (*this).width(); ++row) {
