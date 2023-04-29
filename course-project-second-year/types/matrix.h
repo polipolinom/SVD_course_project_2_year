@@ -41,6 +41,26 @@ class Matrix {
         return data_.size() / height_;
     }
 
+    Vector<Type> column(IndexType ind) const {
+        assert(ind >= 0);
+        assert(ind < width());
+        Vector<Type> res(height_);
+        for (size_t k = 0; k < height_; ++k) {
+            res[k] = (*this)(k, ind);
+        }
+        return res;
+    }
+
+    Vector<Type> row(IndexType ind) const {
+        assert(ind >= 0);
+        assert(ind < height_);
+        Vector<Type> res(width());
+        for (size_t k = 0; k < width(); ++k) {
+            res[k] = (*this)(ind, k);
+        }
+        return res;
+    }
+
     Type& operator()(IndexType row, IndexType column) noexcept {
         assert(row < height_ && row >= 0 && column >= 0 && column <= (*this).width());
         return data_[row * (*this).width() + column];
@@ -64,20 +84,34 @@ class Matrix {
         for (size_t ind = 0; ind < diagonal.size(); ++ind) {
             result(ind, ind) = diagonal.begin()[ind];
         }
+        return result;
     }
 
-    static Matrix from_vector(const Vector<Type>& v) noexcept {
-        if (v.is_horizontal()) {
-            Matrix result = Matrix(1, v.size());
-            for (size_t ind = 0; ind < v.size(); ++ind) {
-                result(0, ind) = v[ind];
+    static Matrix from_vectors(std::vector<Vector<Type>> v) noexcept {
+        if (v.empty()) {
+            Matrix result = Matrix(0, 0);
+            return result;
+        }
+
+        if (v[0].is_horizontal()) {
+            Matrix result = Matrix(v.size(), v[0].size());
+            for (size_t i = 0; i < v.size(); ++i) {
+                assert(v[0].size() == v[i].size());
+                assert(v[i].is_horizontal());
+                for (size_t j = 0; j < v[i].size(); ++j) {
+                    result(i, j) = v[i][j];
+                }
             }
             return result;
         }
 
-        Matrix result = Matrix(v.size(), 1);
-        for (size_t ind = 0; ind < v.size(); ++ind) {
-            result(ind, 0) = v[ind];
+        Matrix result = Matrix(v[0].size(), v.size());
+        for (size_t i = 0; i < v.size(); ++i) {
+            assert(v[0].size() == v[i].size());
+            assert(v[i].is_vertical());
+            for (size_t j = 0; j < v[i].size(); ++j) {
+                result(j, i) = v[i][j];
+            }
         }
         return result;
     }
@@ -111,7 +145,7 @@ class Matrix {
     }
 
     Matrix& operator*=(const Matrix& rhs) noexcept {
-        assert(rhs.height_ != (*this).width());
+        assert(rhs.height_ == (*this).width());
 
         Matrix result(height_, rhs.width());
         for (size_t row = 0; row < height_; ++row) {
@@ -122,10 +156,14 @@ class Matrix {
             }
         }
         *this = result;
+
+        return *this;
     }
 
     friend Matrix operator*(const Matrix& lhs, const Matrix& rhs) noexcept {
-        return lhs * rhs;
+        Matrix result = lhs;
+        result *= rhs;
+        return result;
     }
 
     friend Vector<Type> operator*(const Matrix& lhs, const Vector<Type>& rhs) noexcept {
@@ -202,7 +240,7 @@ class Matrix {
         Matrix result((*this).width(), height_);
         for (size_t row = 0; row < (*this).width(); ++row) {
             for (size_t column = 0; column < height_; ++column) {
-                result(row, column) = data_(column, row);
+                result(row, column) = (*this)(column, row);
             }
         }
         return result;

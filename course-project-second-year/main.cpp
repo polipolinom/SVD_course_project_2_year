@@ -1,17 +1,18 @@
 #include <iostream>
 
+#include "algorithms/QR_decomposition.h"
 #include "algorithms/orthonormalize.h"
+#include "types/matrix.h"
 #include "types/vector.h"
 
 int main() {
     using namespace svd_computation;
-    Vector<long double> a = {2, 3};
-    Vector<long double> b = {3, 2};
-    std::vector<Vector<long double>> v = {a, b};
+    Matrix<long double> A = {{2, 3}, {2, 3}};
 
-    orthonormalize_vectors(v);
+    auto [Q, R] = get_QR_decomposition(A);
 
-    for (auto i : v) {
-        std::cout << i << std::endl << std::endl;
-    }
+    std::cout << Q << std::endl << "========================================" << std::endl;
+    std::cout << R << std::endl << "========================================" << std::endl;
+    std::cout << Q.transpose() * Q << std::endl << "========================================" << std::endl;
+    std::cout << Q * R << std::endl << "========================================" << std::endl;
 }
