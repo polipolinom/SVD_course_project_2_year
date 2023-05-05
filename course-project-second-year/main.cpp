@@ -8,7 +8,7 @@
 
 int main() {
     using namespace svd_computation;
-    Matrix<Complex> A = {{2, Complex(3, 1), 4, 5, 6}, {1, 2, Complex(3, 1), 4, 5}};
+    Matrix<Complex> A = {{Complex(4, 1), Complex(3, 1), 4, 5}, {3, 2, Complex(3, 1), 5}, {5, 6, 7, 5}, {1, 2, 3, 5}};
     Matrix<Complex> U, V;
 
     auto B = bidiagonalize(A, &U, &V);

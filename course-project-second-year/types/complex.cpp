@@ -89,11 +89,11 @@ bool operator==(const Complex& lhs, const Complex& rhs) noexcept {
 }
 
 bool operator!=(const Complex& lhs, const Complex& rhs) noexcept {
-    return !(rhs == lhs);
+    return !(lhs == rhs);
 }
 
 long double Complex::abs() const noexcept {
-    return sqrtf(Re_ * Re_ + Im_ * Im_);
+    return sqrtl(Re_ * Re_ + Im_ * Im_);
 }
 
 long double abs(const Complex& num) {

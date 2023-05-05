@@ -130,6 +130,10 @@ class Vector {
         return data_.empty();
     }
 
+    void normalize() noexcept {
+        (*this) / abs(*this);
+    }
+
     friend std::istream& operator>>(std::istream& in, Vector<Type>& v) noexcept {
         size_t sz;
         in >> sz;
