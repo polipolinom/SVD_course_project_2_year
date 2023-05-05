@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <string>
 
-#include "parser.h"
+#include "../utils/parser.h"
 
 namespace svd_computation {
 Complex::Complex(int x) : Re_(x), Im_(0) {}
@@ -67,7 +67,7 @@ Complex operator*(const Complex& lhs, const Complex& rhs) noexcept {
 
 Complex& Complex::operator/=(const Complex& rhs) noexcept {
     Type abs_rhs = rhs.Re_ * rhs.Re_ + rhs.Im_ * rhs.Im_;
-    *this = Complex((Re_ * rhs.Re_ + Im_ * rhs.Im_) / abs_rhs, (Re_ * rhs.Im_ - Im_ * rhs.Re_) / abs_rhs);
+    *this = Complex((Re_ * rhs.Re_ + Im_ * rhs.Im_) / abs_rhs, (Im_ * rhs.Re_ - Re_ * rhs.Im_) / abs_rhs);
     if (isnan(Re_) || isnan(Im_)) {
         *this = Complex(NAN, NAN);
     }
@@ -76,7 +76,7 @@ Complex& Complex::operator/=(const Complex& rhs) noexcept {
 
 Complex operator/(const Complex& lhs, const Complex& rhs) noexcept {
     Complex result = lhs;
-    result *= rhs;
+    result /= rhs;
     return result;
 }
 
@@ -116,13 +116,21 @@ Complex conjugate(const Complex& num) {
     return num.conjugate();
 }
 
+long double conjugate(const long double& num) {
+    return num;
+}
+
 Complex sqrt(const Complex& num) {
     long double abs_num = abs(num);
     long double arg_num = arg(num);
     if (arg_num < 0) {
         arg_num += 2 * M_PI;
     }
-    return Complex::exp_form(sqrtf(abs_num), arg_num / 2.0l);
+    return Complex::exp_form(sqrtl(abs_num), arg_num / 2.0L);
+}
+
+long double sqrt(const long double& num) {
+    return sqrtl(num);
 }
 
 std::istream& operator>>(std::istream& in, Complex& num) noexcept {
@@ -133,7 +141,6 @@ std::istream& operator>>(std::istream& in, Complex& num) noexcept {
 }
 
 std::ostream& operator<<(std::ostream& out, const Complex& x) noexcept {
-    out << std::fixed << std::setprecision(6);
     long double eps = 1e-6;
     if (std::fabs(x.Re()) < eps && std::fabs(x.Im()) < eps) {
         out << 0.;

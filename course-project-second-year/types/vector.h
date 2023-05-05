@@ -178,7 +178,7 @@ Complex dot_product(Vector<Complex> lhs, Vector<Complex> rhs) noexcept {
     assert(rhs.is_vertical());
     Complex res = 0;
     for (size_t ind = 0; ind < lhs.size(); ++ind) {
-        res += lhs[ind] * rhs[ind].conjugate();
+        res += lhs[ind].conjugate() * rhs[ind];
     }
     return res;
 }

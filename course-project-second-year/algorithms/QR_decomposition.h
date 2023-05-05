@@ -1,45 +1,50 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 
 #include "../types/matrix.h"
 #include "../types/vector.h"
+#include "../utils/complement_orthobase.h"
+#include "constants.h"
 #include "orthonormalize.h"
 
 namespace svd_computation {
 
 template <typename Type>
-std::pair<Matrix<Type>, Matrix<long double>> get_reduce_QR_decomposition(Matrix<Type>& A,
-                                                                         long double eps = DEFAULT_EPSILON) {
+std::pair<Matrix<Type>, Matrix<Type>> get_reduce_QR_decomposition(Matrix<Type>& A,
+                                                                  const long double eps = constants::DEFAULT_EPSILON) {
     std::vector<Vector<Type>> Q;
-    Matrix<long double> R(A.height(), A.width());
+    Matrix<Type> R(A.height(), A.width());
 
     for (size_t ind = 0; ind < A.width(); ++ind) {
         Q.emplace_back(A.column(ind));
-        for (size_t k = 0; k < ind; ++k) {
-            if (R(k, k) == 0.0) {
-                continue;
-            }
-            R(k, ind) = dot_product<Type>(Q[k].transpose(), Q[ind]);
-            Q[ind] -= R(k, ind) * Q[k];
-        }
+    }
+
+    for (size_t ind = 0; ind < Q.size(); ++ind) {
         if (abs<Type>(Q[ind]) <= eps) {
-            R(ind, ind) = 0.0;
+            R(ind, ind) = Type(0.0);
             Q[ind] = {};
             continue;
         }
+
         R(ind, ind) = abs<Type>(Q[ind]);
         Q[ind] /= R(ind, ind);
+
+        for (size_t k = ind + 1; k < Q.size(); ++k) {
+            R(ind, k) = Type(dot_product<Type>(Q[ind].transpose(), Q[k]));
+            Q[k] -= R(ind, k) * Q[ind];
+        }
     }
 
     Q.erase(std::remove_if(Q.begin(), Q.end(), [](Vector<Type>& elem) { return elem.empty(); }), Q.end());
 
-    Matrix<long double> R_result(Q.size(), A.width());
+    Matrix<Type> R_result(Q.size(), A.width());
 
     size_t last_row = 0;
 
     for (size_t ind = 0; ind < A.height(); ++ind) {
-        if (R(ind, ind) == 0.0) {
+        if (R(ind, ind) == Type(0.0)) {
             continue;
         }
         for (size_t k = 0; k < A.width(); ++k) {
@@ -52,7 +57,8 @@ std::pair<Matrix<Type>, Matrix<long double>> get_reduce_QR_decomposition(Matrix<
 }
 
 template <typename Type>
-std::pair<Matrix<Type>, Matrix<long double>> get_QR_decomposition(Matrix<Type>& A, long double eps = DEFAULT_EPSILON) {
+std::pair<Matrix<Type>, Matrix<Type>> get_QR_decomposition(Matrix<Type>& A,
+                                                           const long double eps = constants::DEFAULT_EPSILON) {
     auto [Q1, R1] = get_reduce_QR_decomposition(A, eps);
 
     std::vector<Vector<Type>> Q;
@@ -60,17 +66,9 @@ std::pair<Matrix<Type>, Matrix<long double>> get_QR_decomposition(Matrix<Type>& 
         Q.push_back(Q1.column(ind));
     }
 
-    Vector<Type> zero(A.height());
+    details::complement_orthobase<Type>(Q, eps);
 
-    for (size_t ind = 0; ind < A.height(); ++ind) {
-        zero[ind] = Type(1);
-        Q.emplace_back(zero);
-        zero[ind] = Type(0);
-    }
-
-    orthonormalize_vectors(Q, eps);
-
-    Matrix<long double> R(A.height(), A.width());
+    Matrix<Type> R(A.height(), A.width());
 
     for (size_t i = 0; i < R1.height(); ++i) {
         for (size_t j = 0; j < R1.width(); ++j) {

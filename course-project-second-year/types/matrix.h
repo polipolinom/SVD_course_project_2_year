@@ -62,7 +62,7 @@ class Matrix {
     }
 
     Type& operator()(IndexType row, IndexType column) noexcept {
-        assert(row < height_ && row >= 0 && column >= 0 && column <= (*this).width());
+        assert(row < height_ && row >= 0 && column >= 0 && column < (*this).width());
         return data_[row * (*this).width() + column];
     }
 
@@ -170,7 +170,7 @@ class Matrix {
         assert(rhs.size() == lhs.width());
         assert(rhs.is_vertical());
 
-        Vector<Type> result(0, rhs.size());
+        Vector<Type> result(rhs.size());
         for (size_t row = 0; row < lhs.height(); ++row) {
             for (size_t column = 0; column < rhs.size(); ++column) {
                 result[row] += lhs(row, column) * rhs[column];
@@ -246,6 +246,8 @@ class Matrix {
         return result;
     }
 
+    Matrix conjugate() const noexcept;
+
     friend std::istream& operator>>(std::istream& in, Matrix<Type>& A) noexcept {
         size_t height, width;
         Matrix<Type> res(height, width);
@@ -292,4 +294,20 @@ class Matrix {
     std::vector<Type> data_;
     size_t height_ = 0;
 };
+
+template <>
+Matrix<Complex> Matrix<Complex>::conjugate() const noexcept {
+    Matrix result = transpose();
+    for (size_t i = 0; i < width(); ++i) {
+        for (size_t j = 0; j < height(); ++j) {
+            result(i, j) = result(i, j).conjugate();
+        }
+    }
+    return result;
+}
+
+template <>
+Matrix<long double> Matrix<long double>::conjugate() const noexcept {
+    return transpose();
+}
 }  // namespace svd_computation

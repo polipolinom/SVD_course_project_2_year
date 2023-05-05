@@ -4,7 +4,7 @@ project(course_project CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(course_project_lib types/complex.cpp types/parser.cpp)
+add_library(course_project_lib types/complex.cpp utils/parser.cpp)
 
 add_executable(course_project main.cpp)
 target_link_libraries(course_project course_project_lib)

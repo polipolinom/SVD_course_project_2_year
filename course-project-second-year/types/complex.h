@@ -50,6 +50,8 @@ class Complex {
 long double abs(const Complex&);
 long double arg(const Complex&);
 Complex conjugate(const Complex&);
+long double conjugate(const long double&);
 Complex sqrt(const Complex&);
+long double sqrt(const long double&);
 
 }  // namespace svd_computation

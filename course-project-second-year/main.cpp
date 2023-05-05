@@ -1,18 +1,19 @@
 #include <iostream>
 
 #include "algorithms/QR_decomposition.h"
+#include "algorithms/bidiagonalization.h"
 #include "algorithms/orthonormalize.h"
 #include "types/matrix.h"
 #include "types/vector.h"
 
 int main() {
     using namespace svd_computation;
-    Matrix<long double> A = {{2, 3}, {2, 3}};
+    Matrix<Complex> A = {{2, Complex(3, 1), 4, 5, 6}, {1, 2, Complex(3, 1), 4, 5}};
+    Matrix<Complex> U, V;
 
-    auto [Q, R] = get_QR_decomposition(A);
+    auto B = bidiagonalize(A, &U, &V);
 
-    std::cout << Q << std::endl << "========================================" << std::endl;
-    std::cout << R << std::endl << "========================================" << std::endl;
-    std::cout << Q.transpose() * Q << std::endl << "========================================" << std::endl;
-    std::cout << Q * R << std::endl << "========================================" << std::endl;
+    std::cout << B << "\n============================\n";
+    std::cout << U.conjugate() * U << "\n============================\n";
+    std::cout << V.conjugate() * V << "\n============================\n";
 }
