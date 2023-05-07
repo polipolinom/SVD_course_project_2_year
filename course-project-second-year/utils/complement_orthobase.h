@@ -8,7 +8,8 @@
 namespace svd_computation {
 namespace details {
 template <typename Type>
-void complement_orthobase(std::vector<Vector<Type>>& A, long double eps = svd_computation::constants::DEFAULT_EPSILON) {
+void complement_orthobase(std::vector<Vector<Type>>& A,
+                          const long double eps = svd_computation::constants::DEFAULT_EPSILON) {
     if (A.empty()) {
         return;
     }

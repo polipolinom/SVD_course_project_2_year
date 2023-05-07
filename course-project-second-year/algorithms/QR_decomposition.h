@@ -12,7 +12,7 @@
 namespace svd_computation {
 
 template <typename Type>
-std::pair<Matrix<Type>, Matrix<Type>> get_reduce_QR_decomposition(Matrix<Type>& A,
+std::pair<Matrix<Type>, Matrix<Type>> get_reduce_QR_decomposition(const Matrix<Type>& A,
                                                                   const long double eps = constants::DEFAULT_EPSILON) {
     std::vector<Vector<Type>> Q;
     Matrix<Type> R(A.height(), A.width());
@@ -57,7 +57,7 @@ std::pair<Matrix<Type>, Matrix<Type>> get_reduce_QR_decomposition(Matrix<Type>& 
 }
 
 template <typename Type>
-std::pair<Matrix<Type>, Matrix<Type>> get_QR_decomposition(Matrix<Type>& A,
+std::pair<Matrix<Type>, Matrix<Type>> get_QR_decomposition(const Matrix<Type>& A,
                                                            const long double eps = constants::DEFAULT_EPSILON) {
     auto [Q1, R1] = get_reduce_QR_decomposition(A, eps);
 

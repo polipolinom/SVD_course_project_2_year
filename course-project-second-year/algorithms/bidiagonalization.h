@@ -11,7 +11,7 @@
 namespace svd_computation {
 namespace details {
 template <typename Type>
-long double column_abs(Matrix<Type>& A, size_t column, size_t first_ind) {
+long double column_abs(const Matrix<Type>& A, const size_t column, const size_t first_ind) {
     assert(column >= 0 && column < A.width());
     long double s = 0.0;
     for (size_t k = first_ind; k < A.height(); ++k) {
@@ -22,7 +22,7 @@ long double column_abs(Matrix<Type>& A, size_t column, size_t first_ind) {
 }
 
 template <typename Type>
-long double row_abs(Matrix<Type>& A, size_t row, size_t first_ind) {
+long double row_abs(const Matrix<Type>& A, const size_t row, const size_t first_ind) {
     assert(row >= 0 && row < A.height());
     long double s = 0.0;
     for (size_t k = first_ind; k < A.width(); ++k) {
@@ -33,17 +33,17 @@ long double row_abs(Matrix<Type>& A, size_t row, size_t first_ind) {
 }
 
 template <typename Type>
-void left_reflection(Matrix<Type>& A, size_t ind, Matrix<Type>* left_basis = nullptr,
-                     long double eps = constants::DEFAULT_EPSILON) {
+long double left_reflection(Matrix<Type>& A, const size_t ind, Matrix<Type>* left_basis = nullptr,
+                            const long double eps = constants::DEFAULT_EPSILON) {
     assert(ind >= 0 && ind < A.height());
-    set_low_values_zero(A, eps);
+    details::set_low_values_zero(A, eps);
     Matrix<Type> u(A.height(), 1);
 
     long double s = column_abs(A, ind, ind);
 
     // all numbers less than eps sets to zero with function set_low_values_zero
     if (s == 0.0) {
-        return;
+        return 0.0;
     }
 
     Type alpha = Type(s);
@@ -65,19 +65,21 @@ void left_reflection(Matrix<Type>& A, size_t ind, Matrix<Type>* left_basis = nul
     if (left_basis != nullptr) {
         (*left_basis) = P * (*left_basis);
     }
+
+    return -alpha;
 }
 
 template <typename Type>
-void right_reflection(Matrix<Type>& A, size_t ind, Matrix<Type>* right_basis = nullptr,
-                      long double eps = constants::DEFAULT_EPSILON) {
+long double right_reflection(Matrix<Type>& A, const size_t ind, Matrix<Type>* right_basis = nullptr,
+                             const long double eps = constants::DEFAULT_EPSILON) {
     assert(ind >= 0 && ind + 1 < A.width());
-    set_low_values_zero(A, eps);
+    details::set_low_values_zero(A, eps);
     Matrix<Type> u(A.width(), 1);
     long double s = row_abs(A, ind, ind + 1);
 
     // all numbers less than eps sets to zero with function set_low_values_zero
     if (s == 0.0) {
-        return;
+        return 0.0;
     }
 
     Type alpha = Type(s);
@@ -100,13 +102,17 @@ void right_reflection(Matrix<Type>& A, size_t ind, Matrix<Type>* right_basis = n
     if (right_basis != nullptr) {
         (*right_basis) *= P;
     }
+
+    return -alpha;
 }
 }  // namespace details
 
 template <typename Type>
-Matrix<Type> bidiagonalize(Matrix<Type>& A, Matrix<Type>* left_basis = nullptr, Matrix<Type>* right_basis = nullptr,
-                           long double eps = constants::DEFAULT_EPSILON) {
+Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
+                                  Matrix<Type>* right_basis = nullptr,
+                                  const long double eps = constants::DEFAULT_EPSILON) {
     Matrix<Type> B = A;
+    Matrix<long double> result(A.height(), A.width());
     if (left_basis != nullptr) {
         *left_basis = Matrix<Type>::ones(A.height());
     }
@@ -114,12 +120,14 @@ Matrix<Type> bidiagonalize(Matrix<Type>& A, Matrix<Type>* left_basis = nullptr, 
         *right_basis = Matrix<Type>::ones(A.width());
     }
     for (size_t ind = 0; ind < std::min(A.height(), A.width()); ++ind) {
-        details::left_reflection(B, ind, left_basis, eps);
+        result(ind, ind) = details::left_reflection(B, ind, left_basis, eps);
         if (ind + 1 < A.width()) {
-            details::right_reflection(B, ind, right_basis, eps);
+            result(ind, ind + 1) = details::right_reflection(B, ind, right_basis, eps);
         }
     }
-    set_low_values_zero(B, eps);
-    return B;
+    if (left_basis != nullptr) {
+        (*left_basis) = (*left_basis).conjugate();
+    }
+    return result;
 }
 }  // namespace svd_computation

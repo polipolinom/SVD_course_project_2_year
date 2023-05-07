@@ -141,19 +141,17 @@ std::istream& operator>>(std::istream& in, Complex& num) noexcept {
 }
 
 std::ostream& operator<<(std::ostream& out, const Complex& x) noexcept {
-    long double eps = 1e-6;
-    if (std::fabs(x.Re()) < eps && std::fabs(x.Im()) < eps) {
-        out << 0.;
+    if (x.Re() == 0.0 && x.Im() == 0.0) {
+        out << 0;
         return out;
     }
-
-    if (std::fabs(x.Re()) >= eps) {
+    if (x.Re() != 0.0) {
         out << x.Re();
     }
-    if (std::fabs(x.Im()) < eps) {
+    if (x.Im() == 0.0) {
         return out;
     }
-    if (x.Im() > 0 && std::fabs(x.Re()) >= eps) {
+    if (x.Im() > 0.0) {
         out << "+";
     }
     out << x.Im() << "i";

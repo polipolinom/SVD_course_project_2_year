@@ -150,7 +150,7 @@ class Matrix {
         Matrix result(height_, rhs.width());
         for (size_t row = 0; row < height_; ++row) {
             for (size_t column = 0; column < rhs.width(); ++column) {
-                for (size_t k = 0; k < rhs.height_; k++) {
+                for (size_t k = 0; k < rhs.height_; ++k) {
                     result(row, column) += (*this)(row, k) * rhs(k, column);
                 }
             }
@@ -268,6 +268,8 @@ class Matrix {
         for (size_t i = 0; i < height; i++) {
             for (size_t j = 0; j < width; j++) {
                 std::stringstream ss;
+                ss.flags(out.flags());
+                ss.precision(out.precision());
                 ss << A(i, j);
                 A_str[i][j] = ss.str();
                 max_len = std::max(max_len, ss.str().size());
