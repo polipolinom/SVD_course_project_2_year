@@ -47,30 +47,6 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
     }
 
     if (A.width() < A.height()) {
-        /*        auto M = B1.transpose() * B1;
-                Matrix<long double> right_qr = Matrix<long double>::ones(M.width());
-                auto result = details::apply_qr_for_tridiagonal(M, &right_qr, eps);
-                details::sort_singular_values(result, right_qr);
-                if (right_basis != nullptr) {
-                    (*right_basis) = right_qr.transpose() * right_bidiag;
-                }
-                Matrix<long double> sigma(A.height(), A.width());
-                for (size_t i = 0; i < result.height(); ++i) {
-                    sigma(i, i) = sqrtl(result(i, i));
-                }
-                std::vector<Vector<long double>> left_qr;
-                for (size_t i = 0; i < result_height(); ++i) {
-                    if (sigma(i, i) == 0.0) {
-                        break;
-                    }
-                    left_qr.emplace_back((B1 * right_qr.transpose()).column(i) / sigma(i, i));
-                }
-                complement_orthobase(left_qr);
-                if (left_basis != nullptr) {
-                    (*left_basis) = left_bidiag * Matrix<long double>::from_vectors(left_qr);
-                }
-                return sigma;
-        */
         B = B.transpose();
         B1 = B1.transpose();
     }
