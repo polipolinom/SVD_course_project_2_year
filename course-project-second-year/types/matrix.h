@@ -16,9 +16,7 @@ class Matrix {
     Matrix() = default;
 
     Matrix(std::initializer_list<std::initializer_list<Type>> data) : height_(data.size()) {
-        if (data.size() == 0) {
-            return;
-        }
+        assert(data.size() > 0 && data.begin()[0].size() > 0);
         size_t width = data.begin()[0].size();
         data_ = std::vector<Type>(data.size() * width, Type(0));
         for (size_t row = 0; row < data.size(); ++row) {
@@ -30,14 +28,15 @@ class Matrix {
     }
 
     Matrix(size_t height, size_t width) : height_(height) {
+        assert(height > 0 && width > 0);
         data_ = std::vector<Type>(height * width, Type(0));
     }
 
-    inline size_t height() const noexcept {
+    size_t height() const noexcept {
         return height_;
     }
 
-    inline size_t width() const noexcept {
+    size_t width() const noexcept {
         return data_.size() / height_;
     }
 
@@ -62,16 +61,17 @@ class Matrix {
     }
 
     Type& operator()(IndexType row, IndexType column) noexcept {
-        assert(row < height_ && row >= 0 && column >= 0 && column < (*this).width());
-        return data_[row * (*this).width() + column];
+        assert(row < height_ && row >= 0 && column >= 0 && column < width());
+        return data_[row * width() + column];
     }
 
     const Type& operator()(IndexType row, IndexType column) const noexcept {
-        assert(row < height_ && row >= 0 && column >= 0 && column <= (*this).width());
-        return data_[row * (*this).width() + column];
+        assert(row < height_ && row >= 0 && column >= 0 && column <= width());
+        return data_[row * width() + column];
     }
 
-    static Matrix ones(size_t n) {
+    static Matrix identity(size_t n) {
+        assert(n > 0);
         Matrix result(n, n);
         for (size_t i = 0; i < n; ++i) {
             result(i, i) = Type(1);
@@ -80,6 +80,8 @@ class Matrix {
     }
 
     static Matrix diagonal(std::initializer_list<Type> diagonal) noexcept {
+        assert(diagonal.size() > 0);
+
         Matrix result(diagonal.size(), diagonal.size());
         for (size_t ind = 0; ind < diagonal.size(); ++ind) {
             result(ind, ind) = diagonal.begin()[ind];
@@ -88,16 +90,12 @@ class Matrix {
     }
 
     static Matrix from_vectors(std::vector<Vector<Type>> v) noexcept {
-        if (v.empty()) {
-            Matrix result = Matrix(0, 0);
-            return result;
-        }
+        assert(!v.empty());
 
-        if (v[0].is_horizontal()) {
+        if (v[0].orientation() == Vector<Type>::Orientation::Horizontal) {
             Matrix result = Matrix(v.size(), v[0].size());
             for (size_t i = 0; i < v.size(); ++i) {
-                assert(v[0].size() == v[i].size());
-                assert(v[i].is_horizontal());
+                assert(v[0].size() == v[i].size() && v[i].orientation() == v[0].orientation());
                 for (size_t j = 0; j < v[i].size(); ++j) {
                     result(i, j) = v[i][j];
                 }
@@ -107,8 +105,7 @@ class Matrix {
 
         Matrix result = Matrix(v[0].size(), v.size());
         for (size_t i = 0; i < v.size(); ++i) {
-            assert(v[0].size() == v[i].size());
-            assert(v[i].is_vertical());
+            assert(v[0].size() == v[i].size() && v[i].orientation() == v[0].orientation());
             for (size_t j = 0; j < v[i].size(); ++j) {
                 result(j, i) = v[i][j];
             }
@@ -117,7 +114,7 @@ class Matrix {
     }
 
     Matrix& operator+=(const Matrix& rhs) noexcept {
-        assert(rhs.height_ == height_ && rhs.width() == (*this).width());
+        assert(rhs.height_ == height_ && rhs.width() == width());
         for (size_t ind = 0; ind < data_.size(); ++ind) {
             data_[ind] += rhs.data_[ind];
         }
@@ -131,7 +128,7 @@ class Matrix {
     }
 
     Matrix& operator-=(const Matrix& rhs) noexcept {
-        assert(rhs.height_ == height_ && rhs.width() == (*this).width());
+        assert(rhs.height_ == height_ && rhs.width() == width());
         for (size_t ind = 0; ind < data_.size(); ++ind) {
             data_[ind] -= rhs.data_[ind];
         }
@@ -145,7 +142,7 @@ class Matrix {
     }
 
     Matrix& operator*=(const Matrix& rhs) noexcept {
-        assert(rhs.height_ == (*this).width());
+        assert(rhs.height_ == width());
 
         Matrix result(height_, rhs.width());
         for (size_t row = 0; row < height_; ++row) {
@@ -155,7 +152,7 @@ class Matrix {
                 }
             }
         }
-        *this = result;
+        *this = std::move(result);
 
         return *this;
     }
@@ -167,8 +164,7 @@ class Matrix {
     }
 
     friend Vector<Type> operator*(const Matrix& lhs, const Vector<Type>& rhs) noexcept {
-        assert(rhs.size() == lhs.width());
-        assert(rhs.is_vertical());
+        assert(rhs.size() == lhs.width() && rhs.orientation() == Vector<Type>::Orientation::Vertical);
 
         Vector<Type> result(rhs.size());
         for (size_t row = 0; row < lhs.height(); ++row) {
@@ -176,26 +172,27 @@ class Matrix {
                 result[row] += lhs(row, column) * rhs[column];
             }
         }
+
         return result;
     }
 
     friend Vector<Type> operator*(const Vector<Type>& lhs, const Matrix& rhs) noexcept {
-        assert(lhs.size() == rhs.height());
-        assert(lhs.is_horizontal());
+        assert(lhs.size() == rhs.height() && lhs.orientation() == Vector<Type>::Orientation::Horizontal);
 
-        Vector<Type> result(0, rhs.size());
-        result.transpose();
+        Vector<Type> result(Type(0.0), rhs.size(), Vector<Type>::Orientation::Horizontal);
+
         for (size_t column = 0; column < rhs.width(); ++column) {
             for (size_t row = 0; row < lhs.size(); ++row) {
                 result[column] += rhs[row] * rhs(row, column);
             }
         }
+
         return result;
     }
 
     Matrix& operator*=(const Type& rhs) noexcept {
         for (size_t row = 0; row < height_; ++row) {
-            for (size_t column = 0; column < (*this).width(); ++column) {
+            for (size_t column = 0; column < width(); ++column) {
                 (*this)(row, column) *= rhs;
             }
         }
@@ -209,8 +206,8 @@ class Matrix {
     }
 
     Matrix& operator/=(const Type& rhs) noexcept {
-        for (size_t row = 0; row < height_; row++) {
-            for (size_t column = 0; column < (*this).width(); column++) {
+        for (size_t row = 0; row < height_; ++row) {
+            for (size_t column = 0; column < width(); ++column) {
                 (*this)(row, column) /= rhs;
             }
         }
@@ -225,28 +222,26 @@ class Matrix {
 
     Matrix& operator-() const {
         for (size_t row = 0; row < height_; row++) {
-            for (size_t column = 0; column < (*this).width(); column++) {
+            for (size_t column = 0; column < width(); column++) {
                 (*this)(row, column) = -(*this)(row, column);
             }
         }
         return *this;
     }
 
-    bool empty() const noexcept {
-        return data_.empty();
-    }
-
-    Matrix transpose() const noexcept {
-        Matrix result((*this).width(), height_);
-        for (size_t row = 0; row < (*this).width(); ++row) {
+    Matrix& transpose() noexcept {
+        Matrix result(width(), height_);
+        for (size_t row = 0; row < width(); ++row) {
             for (size_t column = 0; column < height_; ++column) {
                 result(row, column) = (*this)(column, row);
             }
         }
-        return result;
+
+        *this = std::move(result);
+        return *this;
     }
 
-    Matrix conjugate() const noexcept;
+    Matrix& conjugate() noexcept;
 
     friend std::istream& operator>>(std::istream& in, Matrix<Type>& A) noexcept {
         size_t height, width;
@@ -297,19 +292,52 @@ class Matrix {
     size_t height_ = 0;
 };
 
-template <>
-Matrix<Complex> Matrix<Complex>::conjugate() const noexcept {
-    Matrix result = transpose();
-    for (size_t i = 0; i < width(); ++i) {
-        for (size_t j = 0; j < height(); ++j) {
-            result(i, j) = result(i, j).conjugate();
+template <typename Type>
+Matrix<Type> transpose(const Matrix<Type>& A) noexcept {
+    Matrix<Type> result(A.width(), A.height());
+    for (size_t row = 0; row < A.width(); ++row) {
+        for (size_t column = 0; column < A.height(); ++column) {
+            result(row, column) = A(column, row);
         }
     }
     return result;
 }
 
 template <>
-Matrix<long double> Matrix<long double>::conjugate() const noexcept {
+inline Matrix<Complex>& Matrix<Complex>::conjugate() noexcept {
+    Matrix result = transpose();
+    for (size_t i = 0; i < width(); ++i) {
+        for (size_t j = 0; j < height(); ++j) {
+            result(i, j).conjugate();
+        }
+    }
+
+    *this = std::move(result);
+    return *this;
+}
+
+template <>
+inline Matrix<long double>& Matrix<long double>::conjugate() noexcept {
     return transpose();
+}
+
+template <typename Type>
+Matrix<Type> conjugate(const Matrix<Type>& A) noexcept;
+
+template <>
+inline Matrix<long double> conjugate(const Matrix<long double>& A) noexcept {
+    return transpose(A);
+}
+
+template <>
+inline Matrix<Complex> conjugate(const Matrix<Complex>& A) noexcept {
+    Matrix<Complex> result = transpose(A);
+    for (size_t i = 0; i < A.width(); ++i) {
+        for (size_t j = 0; j < A.height(); ++j) {
+            result(i, j).conjugate();
+        }
+    }
+
+    return result;
 }
 }  // namespace svd_computation

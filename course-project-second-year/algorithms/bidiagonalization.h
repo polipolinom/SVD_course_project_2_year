@@ -11,7 +11,7 @@
 namespace svd_computation {
 namespace details {
 template <typename Type>
-long double column_abs(const Matrix<Type>& A, const size_t column, const size_t first_ind) {
+long double column_abs_under(const Matrix<Type>& A, const size_t column, const size_t first_ind) {
     assert(column >= 0 && column < A.width());
     long double s = 0.0;
     for (size_t k = first_ind; k < A.height(); ++k) {
@@ -22,7 +22,7 @@ long double column_abs(const Matrix<Type>& A, const size_t column, const size_t 
 }
 
 template <typename Type>
-long double row_abs(const Matrix<Type>& A, const size_t row, const size_t first_ind) {
+long double row_abs_under(const Matrix<Type>& A, const size_t row, const size_t first_ind) {
     assert(row >= 0 && row < A.height());
     long double s = 0.0;
     for (size_t k = first_ind; k < A.width(); ++k) {
@@ -39,7 +39,7 @@ long double left_reflection(Matrix<Type>& A, const size_t ind, Matrix<Type>* lef
     details::set_low_values_zero(A, eps);
     Matrix<Type> u(A.height(), 1);
 
-    long double s = column_abs(A, ind, ind);
+    long double s = column_abs_under(A, ind, ind);
 
     // all numbers less than eps sets to zero with function set_low_values_zero
     if (s == 0.0) {
@@ -56,10 +56,11 @@ long double left_reflection(Matrix<Type>& A, const size_t ind, Matrix<Type>* lef
         u(k, 0) = A(k, ind);
     }
 
-    long double coef = column_abs(u, 0, ind);
+    long double coef = column_abs_under(u, 0, ind);
+    // coef > 0 because exist |A(k, ind)| > eps (otherwise s = 0.0)
     u /= coef;
 
-    Matrix<Type> P = Matrix<Type>::ones(A.height()) - Type(2.0) * u * u.conjugate();
+    Matrix<Type> P = Matrix<Type>::identity(A.height()) - Type(2.0) * u * conjugate(u);
 
     A = P * A;
     if (left_basis != nullptr) {
@@ -75,7 +76,7 @@ long double right_reflection(Matrix<Type>& A, const size_t ind, Matrix<Type>* ri
     assert(ind >= 0 && ind + 1 < A.width());
     details::set_low_values_zero(A, eps);
     Matrix<Type> u(A.width(), 1);
-    long double s = row_abs(A, ind, ind + 1);
+    long double s = row_abs_under(A, ind, ind + 1);
 
     // all numbers less than eps sets to zero with function set_low_values_zero
     if (s == 0.0) {
@@ -92,10 +93,13 @@ long double right_reflection(Matrix<Type>& A, const size_t ind, Matrix<Type>* ri
         u(k, 0) = A(ind, k);
     }
 
-    long double coef = column_abs(u, 0, ind + 1);
+    long double coef = column_abs_under(u, 0, ind + 1);
+    // coef > 0 because exist |A(ind, k)| > eps (otherwise s = 0.0)
     u /= coef;
 
-    Matrix<Type> P = Matrix<Type>::ones(A.width()) - Type(2.0) * u.conjugate().transpose() * u.transpose();
+    u.transpose();
+
+    Matrix<Type> P = Matrix<Type>::identity(A.width()) - Type(2.0) * conjugate(u) * u;
 
     A *= P;
 
@@ -114,10 +118,10 @@ Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basi
     Matrix<Type> B = A;
     Matrix<long double> result(A.height(), A.width());
     if (left_basis != nullptr) {
-        *left_basis = Matrix<Type>::ones(A.height());
+        *left_basis = Matrix<Type>::identity(A.height());
     }
     if (right_basis != nullptr) {
-        *right_basis = Matrix<Type>::ones(A.width());
+        *right_basis = Matrix<Type>::identity(A.width());
     }
     for (size_t ind = 0; ind < std::min(A.height(), A.width()); ++ind) {
         result(ind, ind) = details::left_reflection(B, ind, left_basis, eps);
@@ -126,8 +130,37 @@ Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basi
         }
     }
     if (left_basis != nullptr) {
-        (*left_basis) = (*left_basis).conjugate();
+        (*left_basis).conjugate();
     }
     return result;
 }
+
+namespace details {
+Matrix<long double> bidiagonalize_with_right_basis(Matrix<long double>& A, const Matrix<long double>& right_basis,
+                                                   const long double eps) {
+    using Matrix = Matrix<long double>;
+
+    Matrix basis = Matrix::identity(A.height());
+
+    Matrix A1 = A * right_basis;
+
+    long double alpha = 0;
+    long double beta = 0;
+    Vector<long double> u(0, A.height());
+    for (size_t ind = 0; ind < A.height(); ++ind) {
+        alpha = abs(A * right_basis.column(ind) - beta * u);
+        u = (A1.column(ind) - beta * u) / alpha;
+        for (size_t i = 0; i < u.size(); ++i) {
+            basis(i, ind) = u[i];
+        }
+
+        if (ind + 1 < A.width()) {
+            beta = dot_product(transpose(u), A1.column(ind + 1));
+        }
+    }
+    std::cout << "#######################\n";
+    std::cout << transpose(basis) * A * right_basis << "\n=========================\n";
+    return basis;
+}
+}  // namespace details
 }  // namespace svd_computation

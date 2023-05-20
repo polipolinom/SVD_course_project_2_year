@@ -7,6 +7,7 @@
 #include "../utils/matrix_split_join.h"
 #include "../utils/set_values.h"
 #include "QR_decomposition.h"
+#include "bidiagonalization.h"
 #include "constants.h"
 
 namespace svd_computation {
@@ -17,14 +18,14 @@ Matrix<Type> get_Schur_decomposition(const Matrix<Type>& A, const Type shift = 0
 
     Matrix<Type> result = A;
     if (basis != nullptr) {
-        (*basis) = Matrix<Type>::ones(A.height());
+        (*basis) = Matrix<Type>::identity(A.height());
     }
 
     while (!details::is_upper_triangular(result, eps)) {
         details::set_low_values_zero(result, eps);
-        auto result_with_shift = result - shift * Matrix<Type>::ones(result.height());
+        auto result_with_shift = result - shift * Matrix<Type>::identity(result.height());
         auto [Q, R] = get_QR_decomposition(result_with_shift, eps);
-        result = R * Q + shift * Matrix<Type>::ones(result.height());
+        result = R * Q + shift * Matrix<Type>::identity(result.height());
         if (basis != nullptr) {
             (*basis) *= Q;
         }
@@ -33,7 +34,7 @@ Matrix<Type> get_Schur_decomposition(const Matrix<Type>& A, const Type shift = 0
 }
 
 namespace details {
-long double get_Wilkinson_shift(const Matrix<long double>& A) {
+inline long double get_Wilkinson_shift(const Matrix<long double>& A) {
     assert(A.height() > 1);
     size_t n = A.height();
     long double shift = A(n - 1, n - 1);
@@ -50,41 +51,77 @@ long double get_Wilkinson_shift(const Matrix<long double>& A) {
     return shift;
 }
 
-Matrix<long double> apply_qr_for_tridiagonal(const Matrix<long double>& A, Matrix<long double>* basis,
-                                             const long double eps = constants::DEFAULT_EPSILON) {
-    assert(is_tridiagonal(A, eps));
+Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>&, Matrix<long double>*, Matrix<long double>*,
+                                            const long double);
+
+inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis, Matrix<long double>* right_basis,
+                         const long double eps = constants::DEFAULT_EPSILON) {
+    using Matrix = Matrix<long double>;
+
+    for (size_t ind = 0; ind + 1 < A.width(); ++ind) {
+        if (A(ind, ind + 1) <= eps) {
+            auto [result1, result2] = split_matrix(A, ind, ind);
+            Matrix left_basis1 = Matrix::identity(ind + 1);
+            Matrix right_basis1 = Matrix::identity(ind + 1);
+            Matrix left_basis2 = Matrix::identity(A.height() - ind - 1);
+            Matrix right_basis2 = Matrix::identity(A.height() - ind - 1);
+            result1 = apply_qr_for_bidiagonal(result1, &left_basis1, &right_basis1, eps);
+            result2 = apply_qr_for_bidiagonal(result2, &left_basis2, &right_basis2, eps);
+            A = join_matrix(result1, result2);
+            if (left_basis != nullptr) {
+                (*left_basis) *= join_matrix(left_basis1, left_basis2);
+            }
+            if (right_basis != nullptr) {
+                (*right_basis) = join_matrix(right_basis1, right_basis2) * (*right_basis);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix<long double>* left_basis,
+                                            Matrix<long double>* right_basis,
+                                            const long double eps = constants::DEFAULT_EPSILON) {
+    using Matrix = Matrix<long double>;
+
+    assert(is_bidiagonal(A, eps));
+
     if (A.height() == 1) {
-        if (basis != nullptr) {
-            *basis = {{1.0}};
+        if (left_basis != nullptr) {
+            (*left_basis) = {{1.0}};
+        }
+        if (right_basis != nullptr) {
+            (*right_basis) = {{1.0}};
+        }
+        if (A(0, 0) <= eps) {
+            return {{0.0}};
         }
         return A;
     }
-    Matrix<long double> result = A;
+
+    Matrix result = A;
     while (!is_diagonal(result, eps)) {
-        set_low_values_zero(result, eps);
-        for (size_t ind = 0; ind + 1 < A.height(); ++ind) {
-            if (A(ind, ind + 1) == 0.0) {
-                auto [result1, result2] = split_matrix(result, ind, ind);
-                Matrix<long double> basis1 = Matrix<long double>::ones(ind + 1);
-                Matrix<long double> basis2 = Matrix<long double>::ones(A.height() - ind - 1);
-                result1 = apply_qr_for_tridiagonal(result1, &basis1, eps);
-                result2 = apply_qr_for_tridiagonal(result2, &basis2, eps);
-                result = join_matrix(result1, result2);
-                if (basis != nullptr) {
-                    (*basis) *= join_matrix(basis1, basis2);
-                }
-                return result;
-            }
+        /*if (split(result, left_basis, right_basis, eps)) {
+            return result;
+        }*/
+        // std::cout << "!!!!!\n";
+        // std::cout << result << "\n=================================\n";
+        Matrix M = transpose(result) * result;
+        long double shift = get_Wilkinson_shift(M);
+        auto M_with_shift = M - shift * Matrix::identity(M.height());
+        auto [Q, R] = get_QR_decomposition(M_with_shift, eps);
+
+        if (right_basis != nullptr) {
+            (*right_basis) *= Q;
         }
-        long double shift = get_Wilkinson_shift(result);
-        auto result_with_shift = result - shift * Matrix<long double>::ones(result.height());
-        auto [Q, R] = get_QR_decomposition(result_with_shift, eps);
-        result = R * Q + shift * Matrix<long double>::ones(result.height());
-        if (basis != nullptr) {
-            (*basis) *= Q;
+        auto l_basis = bidiagonalize_with_right_basis(result, Q, eps);
+        if (left_basis != nullptr) {
+            (*left_basis) *= l_basis;
         }
+        result = transpose(l_basis) * result * Q;
     }
-    set_low_values_zero(result, eps);
+    set_low_values_zero(result);
     return result;
 }
 }  // namespace details

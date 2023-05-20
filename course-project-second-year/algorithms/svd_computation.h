@@ -30,10 +30,22 @@ void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& basis
 }
 }  // namespace details
 
+// TODO: B - vector of singular values
 template <typename Type>
 Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
                                 Matrix<Type>* right_basis = nullptr,
                                 const long double eps = constants::DEFAULT_EPSILON) {
+    if (A.width() < A.height()) {
+        auto result = compute_svd(transpose(A), right_basis, left_basis, eps);
+        if (left_basis != nullptr) {
+            (*left_basis).transpose();
+        }
+        if (right_basis != nullptr) {
+            (*right_basis).transpose();
+        }
+        return result;
+    }
+
     Matrix<Type> left_bidiag, right_bidiag;
     auto B = bidiagonalize(A, &left_bidiag, &right_bidiag, eps);
 
@@ -46,50 +58,12 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
         }
     }
 
-    if (A.width() < A.height()) {
-        B = B.transpose();
-        B1 = B1.transpose();
-    }
+    Matrix<long double> left_qr = Matrix<long double>::identity(B1.height());
+    Matrix<long double> right_qr = Matrix<long double>::identity(B1.width());
+    auto result = details::apply_qr_for_bidiagonal(B1, &left_qr, &right_qr, eps);
 
-    auto M = B1 * B1.transpose();
-    Matrix<long double> left_qr = Matrix<long double>::ones(M.height());
-    auto result = details::apply_qr_for_tridiagonal(M, &left_qr, eps);
+    std::cout << left_bidiag * left_qr * result * transpose(right_qr) * transpose(right_bidiag) << "\n\n";
 
-    details::sort_singular_values(result, left_qr);
-
-    Matrix<long double> sigma(B.height(), B.width());
-    for (size_t i = 0; i < result.height(); ++i) {
-        sigma(i, i) = sqrtl(result(i, i));
-    }
-
-    std::vector<Vector<long double>> right_qr;
-    for (size_t i = 0; i < result.height(); ++i) {
-        if (sigma(i, i) == 0.0) {
-            break;
-        }
-        right_qr.emplace_back((B.transpose() * left_qr).column(i) / sigma(i, i));
-    }
-    details::complement_orthobase(right_qr, eps);
-
-    if (A.width() < A.height()) {
-        sigma = sigma.transpose();
-
-        if (left_basis != nullptr) {
-            (*left_basis) = left_bidiag * Matrix<long double>::from_vectors(right_qr).transpose();
-        }
-
-        if (right_basis != nullptr) {
-            (*right_basis) = right_bidiag * left_qr.transpose();
-        }
-    } else {
-        if (left_basis != nullptr) {
-            (*left_basis) = left_bidiag * left_qr;
-        }
-        if (right_basis != nullptr) {
-            (*right_basis) = right_bidiag * Matrix<long double>::from_vectors(right_qr);
-        }
-    }
-
-    return sigma;
+    return result;
 }
 }  // namespace svd_computation

@@ -14,7 +14,7 @@ void complement_orthobase(std::vector<Vector<Type>>& A,
         return;
     }
 
-    Vector<Type> zero(A[0].size(), A[0].is_horizontal());
+    Vector<Type> zero(A[0].size(), A[0].orientation());
 
     for (size_t ind = 0; ind < zero.size(); ++ind) {
         zero[ind] = Type(1);

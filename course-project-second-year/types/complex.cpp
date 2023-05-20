@@ -11,10 +11,10 @@
 #include "../utils/parser.h"
 
 namespace svd_computation {
-Complex::Complex(int x) : Re_(x), Im_(0) {}
-Complex::Complex(long long x) : Re_(x), Im_(0) {}
-Complex::Complex(double x) : Re_(x), Im_(0) {}
-Complex::Complex(long double x) : Re_(x), Im_(0) {}
+Complex::Complex(int x) : Re_(x) {}
+Complex::Complex(long long x) : Re_(x) {}
+Complex::Complex(double x) : Re_(x) {}
+Complex::Complex(long double x) : Re_(x) {}
 
 Complex::Complex(int Re, int Im) : Re_(Re), Im_(Im) {}
 Complex::Complex(long long Re, long long Im) : Re_(Re), Im_(Im) {}
@@ -33,7 +33,8 @@ Complex::Type Complex::Im() const noexcept {
 }
 
 Complex& Complex::operator+=(const Complex& rhs) noexcept {
-    *this = Complex(Re_ + rhs.Re_, Im_ + rhs.Im_);
+    Re_ += rhs.Re_;
+    Im_ += rhs.Im_;
     return *this;
 }
 
@@ -44,7 +45,8 @@ Complex operator+(const Complex& lhs, const Complex& rhs) noexcept {
 }
 
 Complex& Complex::operator-=(const Complex& rhs) noexcept {
-    *this = Complex(Re_ - rhs.Re_, Im_ - rhs.Im_);
+    Re_ -= rhs.Re_;
+    Im_ -= rhs.Im_;
     return *this;
 }
 
@@ -68,7 +70,7 @@ Complex operator*(const Complex& lhs, const Complex& rhs) noexcept {
 Complex& Complex::operator/=(const Complex& rhs) noexcept {
     Type abs_rhs = rhs.Re_ * rhs.Re_ + rhs.Im_ * rhs.Im_;
     *this = Complex((Re_ * rhs.Re_ + Im_ * rhs.Im_) / abs_rhs, (Im_ * rhs.Re_ - Re_ * rhs.Im_) / abs_rhs);
-    if (isnan(Re_) || isnan(Im_)) {
+    if (isnan(Re_) || isnan(Im_)) {  // I think, +-INF makes more sence than nan
         *this = Complex(NAN, NAN);
     }
     return *this;
@@ -85,6 +87,15 @@ Complex Complex::operator-() const noexcept {
 }
 
 bool operator==(const Complex& lhs, const Complex& rhs) noexcept {
+    if (isnan(lhs.Re_) || isnan(lhs.Im_)) {
+        if (isnan(rhs.Re_) || isnan(rhs.Im_)) {
+            return true;
+        }
+        return false;
+    }
+    if (isnan(rhs.Re_) || isnan(rhs.Im_)) {
+        return false;
+    }
     return (lhs.Re_ == rhs.Re_ && lhs.Im_ == rhs.Im_);
 }
 
@@ -108,21 +119,19 @@ long double arg(const Complex& num) {
     return num.arg();
 }
 
-Complex Complex::conjugate() const noexcept {
-    return Complex(Re_, -Im_);
+Complex& Complex::conjugate() noexcept {
+    Im_ = -Im_;
+    return *this;
 }
 
 Complex conjugate(const Complex& num) {
-    return num.conjugate();
+    return {num.Re(), -num.Im()};
 }
 
-long double conjugate(const long double& num) {
-    return num;
-}
-
+// returns sqrt with argument in [0, pi)
 Complex sqrt(const Complex& num) {
-    long double abs_num = abs(num);
-    long double arg_num = arg(num);
+    Complex::Type abs_num = abs(num);
+    Complex::Type arg_num = arg(num);
     if (arg_num < 0) {
         arg_num += 2 * M_PI;
     }

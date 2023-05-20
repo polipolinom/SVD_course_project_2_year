@@ -38,6 +38,26 @@ bool is_tridiagonal(const Matrix<Type>& A, const long double eps = constants::DE
 }
 
 template <typename Type>
+bool is_bidiagonal(const Matrix<Type>& A, const long double eps = constants::DEFAULT_EPSILON) {
+    if (A.height() != A.width()) {
+        return false;
+    }
+    for (size_t i = 0; i < A.height(); ++i) {
+        for (size_t j = 0; j < i; ++j) {
+            if (abs(A(i, j)) > eps) {
+                return false;
+            }
+        }
+        for (size_t j = i + 2; j < A.width(); ++j) {
+            if (abs(A(i, j)) > eps) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+template <typename Type>
 bool is_diagonal(const Matrix<Type>& A, const long double eps = constants::DEFAULT_EPSILON) {
     if (A.height() != A.width()) {
         return false;

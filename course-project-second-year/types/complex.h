@@ -4,9 +4,9 @@
 
 namespace svd_computation {
 class Complex {
+   public:
     using Type = long double;
 
-   public:
     Complex() = default;
     Complex(int);
     Complex(long long);
@@ -35,9 +35,9 @@ class Complex {
     friend bool operator==(const Complex&, const Complex&) noexcept;
     friend bool operator!=(const Complex&, const Complex&) noexcept;
 
-    long double abs() const noexcept;
-    long double arg() const noexcept;
-    Complex conjugate() const noexcept;
+    Type abs() const noexcept;
+    Type arg() const noexcept;
+    Complex& conjugate() noexcept;
 
     friend std::istream& operator>>(std::istream&, Complex&) noexcept;
     friend std::ostream& operator<<(std::ostream&, const Complex&) noexcept;
@@ -47,10 +47,9 @@ class Complex {
     Type Im_ = 0.;
 };
 
-long double abs(const Complex&);
-long double arg(const Complex&);
+Complex::Type abs(const Complex&);
+Complex::Type arg(const Complex&);
 Complex conjugate(const Complex&);
-long double conjugate(const long double&);
 Complex sqrt(const Complex&);
 long double sqrt(const long double&);
 

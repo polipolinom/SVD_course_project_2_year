@@ -24,20 +24,20 @@ std::pair<Matrix<Type>, Matrix<Type>> get_reduce_QR_decomposition(const Matrix<T
     for (size_t ind = 0; ind < Q.size(); ++ind) {
         if (abs<Type>(Q[ind]) <= eps) {
             R(ind, ind) = Type(0.0);
-            Q[ind] = {};
+            Q[ind] = Vector<Type>(Type(0.0), Q[ind].size());
             continue;
         }
 
-        R(ind, ind) = abs<Type>(Q[ind]);
+        R(ind, ind) = abs(Q[ind]);
         Q[ind] /= R(ind, ind);
 
         for (size_t k = ind + 1; k < Q.size(); ++k) {
-            R(ind, k) = Type(dot_product<Type>(Q[ind].transpose(), Q[k]));
+            R(ind, k) = Type(dot_product<Type>(transpose(Q[ind]), Q[k]));
             Q[k] -= R(ind, k) * Q[ind];
         }
     }
 
-    Q.erase(std::remove_if(Q.begin(), Q.end(), [](Vector<Type>& elem) { return elem.empty(); }), Q.end());
+    Q.erase(std::remove(Q.begin(), Q.end(), Vector<Type>(Type(0.0), Q[0].size())), Q.end());
 
     Matrix<Type> R_result(Q.size(), A.width());
 

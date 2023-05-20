@@ -11,11 +11,9 @@
 
 int main() {
     using namespace svd_computation;
-    Matrix<long double> A = {{2, 3}, {4, 5}, {5, 6}, {7, 6}};
-    Matrix<long double> U, V;
+    Matrix<long double> A = {{1, 2, 3}, {0, 1, 2}, {0, 0, 1}};
+    Matrix<long double> V, U;
 
-    auto B = compute_svd(A, &U, &V);
-
-    std::cout << B << "\n\n";
-    std::cout << U * B * V.transpose();
+    auto B = compute_svd(A, &V, &U);
+    std::cout << std::setprecision(10) << B << "\n============================\n";
 }
