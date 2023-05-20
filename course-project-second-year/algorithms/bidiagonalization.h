@@ -7,6 +7,7 @@
 #include "../types/vector.h"
 #include "../utils/complement_orthobase.h"
 #include "../utils/set_values.h"
+#include "bidiagonalization.h"
 
 namespace svd_computation {
 namespace details {
@@ -158,8 +159,6 @@ Matrix<long double> bidiagonalize_with_right_basis(Matrix<long double>& A, const
             beta = dot_product(transpose(u), A1.column(ind + 1));
         }
     }
-    std::cout << "#######################\n";
-    std::cout << transpose(basis) * A * right_basis << "\n=========================\n";
     return basis;
 }
 }  // namespace details

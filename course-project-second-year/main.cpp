@@ -11,9 +11,10 @@
 
 int main() {
     using namespace svd_computation;
-    Matrix<long double> A = {{1, 2, 3}, {0, 1, 2}, {0, 0, 1}};
+    Matrix<long double> A = {{1, 2, 3}, {4, 1, 2}, {5, 6, 1}};
     Matrix<long double> V, U;
 
-    auto B = compute_svd(A, &V, &U);
-    std::cout << std::setprecision(10) << B << "\n============================\n";
+    auto [Q, R] = get_QR_decomposition(A);
+    std::cout << std::setprecision(10) << Q * R << "\n============================\n";
+    std::cout << std::setprecision(10) << R << "\n============================\n";
 }
