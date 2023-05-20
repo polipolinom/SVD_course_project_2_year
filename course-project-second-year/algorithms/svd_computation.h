@@ -18,12 +18,14 @@ void swap_columns(Matrix<long double>& A, int ind1, int ind2) {
     }
 }
 
-void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& basis) {
+void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& left_basis,
+                          Matrix<long double>& right_basis) {
     for (size_t i = 0; i < sigma.height(); ++i) {
         for (size_t j = 0; j < sigma.height() - i - 1; ++j) {
             if (sigma(j, j) < sigma(j + 1, j + 1)) {
                 std::swap(sigma(j, j), sigma(j + 1, j + 1));
-                swap_columns(basis, j, j + 1);
+                swap_columns(left_basis, j, j + 1);
+                swap_columns(right_basis, j, j + 1);
             }
         }
     }
@@ -35,21 +37,17 @@ template <typename Type>
 Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
                                 Matrix<Type>* right_basis = nullptr,
                                 const long double eps = constants::DEFAULT_EPSILON) {
-    if (A.width() < A.height()) {
-        auto result = compute_svd(transpose(A), right_basis, left_basis, eps);
-        if (left_basis != nullptr) {
-            (*left_basis).transpose();
-        }
-        if (right_basis != nullptr) {
-            (*right_basis).transpose();
-        }
-        return result;
+    if (A.width() > A.height()) {
+        auto sigma = compute_svd(conjugate(A), right_basis, left_basis, eps);
+        sigma.conjugate();
+
+        return sigma;
     }
 
     Matrix<Type> left_bidiag, right_bidiag;
     auto B = bidiagonalize(A, &left_bidiag, &right_bidiag, eps);
 
-    size_t min_size = std::min(B.height(), B.width());
+    size_t min_size = B.width();
     Matrix<long double> B1(min_size, min_size);
     for (size_t i = 0; i < min_size; ++i) {
         B1(i, i) = B(i, i);
@@ -62,8 +60,32 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
     Matrix<long double> right_qr = Matrix<long double>::identity(B1.width());
     auto result = details::apply_qr_for_bidiagonal(B1, &left_qr, &right_qr, eps);
 
-    std::cout << left_bidiag * left_qr * result * transpose(right_qr) * transpose(right_bidiag) << "\n\n";
+    details::sort_singular_values(result, left_qr, right_qr);
 
-    return result;
+    Matrix<long double> new_left_qr(A.height(), A.height());
+
+    for (size_t row = 0; row < A.width(); ++row) {
+        for (size_t column = 0; column < A.width(); ++column) {
+            new_left_qr(row, column) = left_qr(row, column);
+        }
+    }
+
+    for (size_t ind = A.height(); ind < A.width(); ++ind) {
+        new_left_qr(ind, ind) = 1.0;
+    }
+
+    Matrix<long double> sigma(B.height(), B.width());
+    for (size_t i = 0; i < result.width(); ++i) {
+        sigma(i, i) = result(i, i);
+    }
+
+    if (left_basis != nullptr) {
+        (*left_basis) = left_bidiag * new_left_qr;
+    }
+    if (right_basis != nullptr) {
+        (*right_basis) = right_bidiag * right_qr;
+    }
+
+    return sigma;
 }
 }  // namespace svd_computation

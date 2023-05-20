@@ -305,14 +305,11 @@ Matrix<Type> transpose(const Matrix<Type>& A) noexcept {
 
 template <>
 inline Matrix<Complex>& Matrix<Complex>::conjugate() noexcept {
-    Matrix result = transpose();
-    for (size_t i = 0; i < width(); ++i) {
-        for (size_t j = 0; j < height(); ++j) {
-            result(i, j).conjugate();
-        }
+    transpose();
+    for (size_t i = 0; i < data_.size(); ++i) {
+        data_[i].conjugate();
     }
 
-    *this = std::move(result);
     return *this;
 }
 
