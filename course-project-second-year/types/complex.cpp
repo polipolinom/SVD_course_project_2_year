@@ -102,20 +102,19 @@ bool operator==(const Complex& lhs, const Complex& rhs) noexcept {
 bool operator!=(const Complex& lhs, const Complex& rhs) noexcept {
     return !(lhs == rhs);
 }
-
-long double Complex::abs() const noexcept {
+Complex::Type Complex::abs() const noexcept {
     return sqrtl(Re_ * Re_ + Im_ * Im_);
 }
 
-long double abs(const Complex& num) {
+Complex::Type abs(const Complex& num) {
     return num.abs();
 }
 
-long double Complex::arg() const noexcept {
+Complex::Type Complex::arg() const noexcept {
     return atan2(Im_, Re_);
 }
 
-long double arg(const Complex& num) {
+Complex::Type arg(const Complex& num) {
     return num.arg();
 }
 

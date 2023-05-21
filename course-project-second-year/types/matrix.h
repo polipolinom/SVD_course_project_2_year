@@ -89,26 +89,12 @@ class Matrix {
         return result;
     }
 
-    static Matrix from_vectors(std::vector<Vector<Type>> v) noexcept {
-        assert(!v.empty());
+    static Matrix diagonal(std::vector<Type> diagonal) noexcept {
+        assert(diagonal.size() > 0);
 
-        if (v[0].orientation() == Vector<Type>::Orientation::Horizontal) {
-            Matrix result = Matrix(v.size(), v[0].size());
-            for (size_t i = 0; i < v.size(); ++i) {
-                assert(v[0].size() == v[i].size() && v[i].orientation() == v[0].orientation());
-                for (size_t j = 0; j < v[i].size(); ++j) {
-                    result(i, j) = v[i][j];
-                }
-            }
-            return result;
-        }
-
-        Matrix result = Matrix(v[0].size(), v.size());
-        for (size_t i = 0; i < v.size(); ++i) {
-            assert(v[0].size() == v[i].size() && v[i].orientation() == v[0].orientation());
-            for (size_t j = 0; j < v[i].size(); ++j) {
-                result(j, i) = v[i][j];
-            }
+        Matrix result(diagonal.size(), diagonal.size());
+        for (size_t ind = 0; ind < diagonal.size(); ++ind) {
+            result(ind, ind) = diagonal[ind];
         }
         return result;
     }

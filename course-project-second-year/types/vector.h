@@ -32,6 +32,12 @@ class Vector {
         assert(list.size() > 0);
     }
 
+    static Vector standart_basis(IndexType ind, size_t length, Orientation orientation = Vertical) {
+        Vector result(length, orientation);
+        result[ind] = Type(1.0);
+        return result;
+    }
+
     size_t size() const noexcept {
         return data_.size();
     }

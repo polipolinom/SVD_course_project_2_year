@@ -14,12 +14,10 @@ void complement_orthobase(std::vector<Vector<Type>>& A,
         return;
     }
 
-    Vector<Type> zero(A[0].size(), A[0].orientation());
+    A.reserve(A.size() + A[0].size());
 
-    for (size_t ind = 0; ind < zero.size(); ++ind) {
-        zero[ind] = Type(1);
-        A.emplace_back(zero);
-        zero[ind] = Type(0);
+    for (size_t ind = 0; ind < A[0].size(); ++ind) {
+        A.push_back(Vector<Type>::standart_basis(ind, A[0].size(), A[0].orientation()));
     }
 
     orthonormalize(A, eps);

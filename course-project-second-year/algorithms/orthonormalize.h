@@ -9,7 +9,7 @@
 namespace svd_computation {
 
 template <typename Type>
-void orthonormalize(std::vector<Vector<Type>>& system, const long double eps = constants::DEFAULT_EPSILON) { 
+void orthonormalize(std::vector<Vector<Type>>& system, const long double eps = constants::DEFAULT_EPSILON) {
     for (size_t ind = 0; ind < system.size(); ++ind) {
         if (abs(system[ind]) <= eps) {
             system[ind] = Vector<Type>(Type(0.0), system[ind].size());
