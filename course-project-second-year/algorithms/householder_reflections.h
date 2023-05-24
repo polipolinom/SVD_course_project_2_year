@@ -74,7 +74,7 @@ long double right_reflection(Matrix<Type>& A, const int row, const int column, M
     assert(column >= 0 && column < A.width());
 
     details::set_low_values_zero(A, eps);
-    Matrix<Type> u(A.width(), 1);
+    Matrix<Type> u(1, A.width());
     long double s = details::row_abs_under(A, row, column);
 
     // all numbers less than eps sets to zero with function set_low_values_zero
@@ -87,16 +87,14 @@ long double right_reflection(Matrix<Type>& A, const int row, const int column, M
         alpha *= A(row, column) / abs(A(row, column));
     }
 
-    u(column, 0) = A(row, column) + alpha;
+    u(0, column) = A(row, column) + alpha;
     for (size_t k = column + 1; k < A.width(); ++k) {
-        u(k, 0) = A(row, k);
+        u(0, k) = A(row, k);
     }
 
-    long double coef = details::column_abs_under(u, 0, column);
+    long double coef = details::row_abs_under(u, 0, column);
     // coef > 0 because exist |A(ind, k)| > eps (otherwise s = 0.0)
     u /= coef;
-
-    u.transpose();
 
     Matrix<Type> P = Matrix<Type>::identity(A.width()) - Type(2.0) * conjugate(u) * u;
 

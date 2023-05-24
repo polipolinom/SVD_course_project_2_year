@@ -11,7 +11,10 @@
 
 int main() {
     using namespace svd_computation;
-    Matrix<long double> A = {{1, 2, 3, 5}, {0, 1, 2, 6}, {0, 0, 1, 7}};
+    Matrix<long double> A = {{799.408, -519.941, -359.672, 599.85},
+                             {498.816, -399.882, -449.345, 747.7},
+                             {2498.42, -1599.84, -1049.13, 1749.6},
+                             {2498, -1599.88, -1049.34, 1749.7}};
     Matrix<long double> V, U;
 
     auto B = compute_svd(A, &V, &U);
