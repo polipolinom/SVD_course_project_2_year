@@ -61,6 +61,8 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
     Matrix<long double> right_qr = Matrix<long double>::identity(B1.width());
     auto result = details::apply_qr_for_bidiagonal(B1, &left_qr, &right_qr, eps);
 
+    std::cout << left_qr * result * right_qr << std::endl;
+
     details::sort_singular_values(result, left_qr, right_qr);
 
     // std::cout << result << "\n\n";

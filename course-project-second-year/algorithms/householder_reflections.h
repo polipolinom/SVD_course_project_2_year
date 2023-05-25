@@ -58,9 +58,9 @@ long double left_reflection(Matrix<Type>& A, const int row, const int column, Ma
 
     Matrix<Type> P = Matrix<Type>::identity(A.height()) - Type(2.0) * u * conjugate(u);
 
-    A = P * A;
+    A -= Type(2.0) * u * (conjugate(u) * A);
     if (left_basis != nullptr) {
-        (*left_basis) = P * (*left_basis);
+        (*left_basis) -= Type(2.0) * u * (conjugate(u) * (*left_basis));
     }
 
     return -alpha;
@@ -94,12 +94,10 @@ long double right_reflection(Matrix<Type>& A, const int row, const int column, M
     // coef > 0 because exist |A(ind, k)| > eps / A.width() (otherwise s <= eps)
     u /= coef;
 
-    Matrix<Type> P = Matrix<Type>::identity(A.width()) - Type(2.0) * conjugate(u) * u;
-
-    A *= P;
+    A -= Type(2.0) * (A * conjugate(u)) * u;
 
     if (right_basis != nullptr) {
-        (*right_basis) *= P;
+        (*right_basis) -= Type(2.0) * ((*right_basis) * conjugate(u)) * u;
     }
 
     return -alpha;

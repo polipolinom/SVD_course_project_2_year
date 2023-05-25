@@ -35,39 +35,4 @@ Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basi
 
     return B;
 }
-
-namespace details {
-Matrix<long double> bidiagonalize_with_right_basis(Matrix<long double>& A, const Matrix<long double>& right_basis,
-                                                   const long double eps) {
-    using Matrix = Matrix<long double>;
-
-    Matrix basis = Matrix::identity(A.height());
-
-    Matrix A1 = A * right_basis;
-
-    std::vector<Vector<long double>> U;
-
-    long double alpha = 0;
-    long double beta = 0;
-    Vector<long double> u(0, A.height());
-    for (size_t ind = 0; ind < A.height(); ++ind) {
-        alpha = abs(A * right_basis.column(ind) - beta * u);
-        if (alpha <= eps) {
-            u = add_one_vector(U, A.height(), Vector<long double>::Orientation::Vertical, eps);
-        } else {
-            u = (A1.column(ind) - beta * u) / alpha;
-        }
-        for (size_t i = 0; i < u.size(); ++i) {
-            basis(i, ind) = u[i];
-        }
-
-        U.emplace_back(u);
-
-        if (ind + 1 < A.width()) {
-            beta = dot_product(transpose(u), A1.column(ind + 1));
-        }
-    }
-    return basis;
-}
-}  // namespace details
 }  // namespace svd_computation

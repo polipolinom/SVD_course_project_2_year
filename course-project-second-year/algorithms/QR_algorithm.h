@@ -80,6 +80,26 @@ inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis
     return false;
 }
 
+inline void multiplyRightGivens(Matrix<long double>& A, long double c, long double s, int i, int j) {
+    for (size_t k = 0; k < A.height(); ++k) {
+        long double a = A(k, i);
+        long double b = A(k, j);
+
+        A(k, i) = c * a - s * b;
+        A(k, j) = s * a + c * b;
+    }
+}
+
+inline void multiplyLeftGivens(Matrix<long double>& A, long double c, long double s, int i, int j) {
+    for (size_t k = 0; k < A.width(); ++k) {
+        long double a = A(i, k);
+        long double b = A(j, k);
+
+        A(i, k) = c * a - s * b;
+        A(j, k) = s * a + c * b;
+    }
+}
+
 Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix<long double>* left_basis,
                                             Matrix<long double>* right_basis,
                                             const long double eps = constants::DEFAULT_EPSILON) {
@@ -108,8 +128,10 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
 
     Matrix result = A;
     const int n = result.height();
-    while (!is_diagonal(result, eps)) {
-        std::cout << result << "\n!!!!!!!!!!!!!!!\n";
+    int operations = 0;
+    while (!is_diagonal(result, eps) && operations < 50 * result.height()) {
+        operations++;
+        // std::cout << result << "\n!!!!!!!!!!!!!!!\n";
         if (split(result, left_basis, right_basis, eps)) {
             return result;
         }
@@ -117,20 +139,13 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
         for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
             if (abs(result(ind, ind)) <= eps) {
                 for (size_t k = ind + 1; k < result.height(); ++k) {
-                    std::cout << ind << std::endl;
                     auto [cos, sin] = get_givens_rotation(result(k, k), result(ind, k), eps);
-                    std::cout << (Matrix){{cos, sin}, {-sin, cos}} * (Matrix){{result(ind, k)}, {result(k, k)}}
-                              << "\n``````\n";
-                    Matrix G = Matrix::identity(A.height());
 
-                    G(ind, ind) = cos;
-                    G(k, k) = cos;
-                    G(ind, k) = -sin;
-                    G(k, ind) = sin;
-
-                    result = transpose(G) * result;
+                    multiplyLeftGivens(result, cos, -sin, ind, k);
+                    if (left_basis != nullptr) {
+                        multiplyRightGivens(*left_basis, cos, -sin, ind, k);
+                    }
                 }
-                std::cout << result << "\n``````````````````````\n";
                 split(result, left_basis, right_basis, eps);
                 return result;
             }
@@ -148,34 +163,28 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
             get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
 
         for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
-            Matrix T = Matrix::identity(result.height());
             if (ind == 0) {
                 auto [cos, sin] =
                     get_givens_rotation(result(0, 0) * result(0, 0) - shift, result(0, 0) * result(0, 1), eps);
 
-                T(0, 0) = cos;
-                T(0, 1) = sin;
-                T(1, 1) = cos;
-                T(1, 0) = -sin;
-
-                result *= T;
+                multiplyRightGivens(result, cos, sin, 0, 1);
+                if (right_basis != nullptr) {
+                    multiplyRightGivens(*right_basis, cos, sin, 0, 1);
+                }
             } else {
                 auto [cos, sin] = get_givens_rotation(result(ind - 1, ind), result(ind - 1, ind + 1), eps);
-                T(ind, ind) = cos;
-                T(ind, ind + 1) = sin;
-                T(ind + 1, ind + 1) = cos;
-                T(ind + 1, ind) = -sin;
 
-                result *= T;
+                multiplyRightGivens(result, cos, sin, ind, ind + 1);
+                if (right_basis != nullptr) {
+                    multiplyRightGivens(*right_basis, cos, sin, ind, ind + 1);
+                }
             }
-            Matrix S = Matrix::identity(result.height());
             auto [cos, sin] = get_givens_rotation(result(ind, ind), result(ind + 1, ind));
-            S(ind, ind) = cos;
-            S(ind, ind + 1) = sin;
-            S(ind + 1, ind + 1) = cos;
-            S(ind + 1, ind) = -sin;
 
-            result = transpose(S) * result;
+            multiplyRightGivens(result, cos, sin, ind, ind + 1);
+            if (left_basis != nullptr) {
+                multiplyRightGivens(*left_basis, cos, sin, ind, ind + 1);
+            }
         }
 
         // std::cout << result << "\n##################\n";
