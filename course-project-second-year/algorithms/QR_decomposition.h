@@ -18,6 +18,9 @@ std::pair<Matrix<Type>, Matrix<Type>> get_QR_decomposition(const Matrix<Type>& A
     Matrix<Type> R = A;
     Matrix<Type> Q = Matrix<Type>::identity(A.height());
     for (size_t ind = 0; ind < std::min(A.height(), A.width()); ++ind) {
+        if (ind + 1 == A.height()) {
+            break;
+        }
         left_reflection(R, ind, ind, &Q, eps);
     }
     Q.conjugate();

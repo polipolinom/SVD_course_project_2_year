@@ -56,10 +56,12 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>&, Matrix<l
 
 inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis, Matrix<long double>* right_basis,
                          const long double eps = constants::DEFAULT_EPSILON) {
+    std::cout << "split\n";
+
     using Matrix = Matrix<long double>;
 
     for (size_t ind = 0; ind + 1 < A.width(); ++ind) {
-        if (A(ind, ind + 1) <= eps) {
+        if (abs(A(ind, ind + 1)) < eps) {
             auto [result1, result2] = split_matrix(A, ind, ind);
             Matrix left_basis1 = Matrix::identity(ind + 1);
             Matrix right_basis1 = Matrix::identity(ind + 1);
@@ -90,27 +92,41 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
     if (A.height() == 1) {
         if (left_basis != nullptr) {
             (*left_basis) = {{1.0}};
+            if (A(0, 0) < -eps) {
+                (*left_basis) = {{-1.0}};
+            }
         }
         if (right_basis != nullptr) {
             (*right_basis) = {{1.0}};
         }
-        if (A(0, 0) <= eps) {
+        if (abs(A(0, 0)) <= eps) {
             return {{0.0}};
+        }
+        if (A(0, 0) < -eps) {
+            return {{-A(0, 0)}};
         }
         return A;
     }
 
     Matrix result = A;
+    std::cout << "A:\n";
+    std::cout << A << std::endl << std::endl;
     while (!is_diagonal(result, eps)) {
-        /*if (split(result, left_basis, right_basis, eps)) {
-            return result;
-        }*/
-        // std::cout << "!!!!!\n";
-        // std::cout << result << "\n=================================\n";
+        std::cout << "!!!!!\n";
+        std::cout << result << "\n\n";
+
         Matrix M = transpose(result) * result;
         long double shift = get_Wilkinson_shift(M);
+        for (size_t ind = 0; ind < result.height(); ++ind) {
+            if (abs(result(ind, ind)) < eps) {
+                shift = 0.0;
+            }
+        }
+
+        std::cout << "shift:" << shift << "\n";
         auto M_with_shift = M - shift * Matrix::identity(M.height());
         auto [Q, R] = get_QR_decomposition(M_with_shift, eps);
+        std::cout << "R:\n" << R << std::endl;
 
         if (right_basis != nullptr) {
             (*right_basis) *= Q;
@@ -120,6 +136,12 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
             (*left_basis) *= l_basis;
         }
         result = transpose(l_basis) * result * Q;
+
+        std::cout << "\n=================================\n";
+
+        if (split(result, left_basis, right_basis, eps)) {
+            return result;
+        }
     }
     set_low_values_zero(result);
     return result;

@@ -50,9 +50,8 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
     size_t min_size = B.width();
     Matrix<long double> B1(min_size, min_size);
     for (size_t i = 0; i < min_size; ++i) {
-        B1(i, i) = B(i, i);
-        if (i + 1 < min_size) {
-            B1(i, i + 1) = B(i, i + 1);
+        for (size_t j = 0; j < min_size; ++j) {
+            B1(i, j) = B(i, j);
         }
     }
 
@@ -61,6 +60,8 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
     auto result = details::apply_qr_for_bidiagonal(B1, &left_qr, &right_qr, eps);
 
     details::sort_singular_values(result, left_qr, right_qr);
+
+    // std::cout << result << "\n\n";
 
     Matrix<long double> new_left_qr(A.height(), A.height());
 

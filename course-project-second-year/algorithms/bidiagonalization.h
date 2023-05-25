@@ -23,9 +23,9 @@ Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basi
     }
 
     for (size_t ind = 0; ind < std::min(A.height(), A.width()); ++ind) {
-        result(ind, ind) = left_reflection(B, ind, ind, left_basis, eps);
+        left_reflection(B, ind, ind, left_basis, eps);
         if (ind + 1 < A.width()) {
-            result(ind, ind + 1) = right_reflection(B, ind, ind + 1, right_basis, eps);
+            right_reflection(B, ind, ind + 1, right_basis, eps);
         }
     }
 
@@ -33,7 +33,7 @@ Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basi
         (*left_basis).conjugate();
     }
 
-    return result;
+    return B;
 }
 
 namespace details {
@@ -45,15 +45,23 @@ Matrix<long double> bidiagonalize_with_right_basis(Matrix<long double>& A, const
 
     Matrix A1 = A * right_basis;
 
+    std::vector<Vector<long double>> U;
+
     long double alpha = 0;
     long double beta = 0;
     Vector<long double> u(0, A.height());
     for (size_t ind = 0; ind < A.height(); ++ind) {
         alpha = abs(A * right_basis.column(ind) - beta * u);
-        u = (A1.column(ind) - beta * u) / alpha;
+        if (alpha <= eps) {
+            u = add_one_vector(U, A.height(), Vector<long double>::Orientation::Vertical, eps);
+        } else {
+            u = (A1.column(ind) - beta * u) / alpha;
+        }
         for (size_t i = 0; i < u.size(); ++i) {
             basis(i, ind) = u[i];
         }
+
+        U.emplace_back(u);
 
         if (ind + 1 < A.width()) {
             beta = dot_product(transpose(u), A1.column(ind + 1));

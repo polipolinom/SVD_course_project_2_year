@@ -33,18 +33,17 @@ long double left_reflection(Matrix<Type>& A, const int row, const int column, Ma
     assert(row >= 0 && row < A.height());
     assert(column >= 0 && column < A.width());
 
-    details::set_low_values_zero(A, eps);
+    // details::set_low_values_zero(A, eps);
     Matrix<Type> u(A.height(), 1);
 
     long double s = details::column_abs_under(A, row, column);
 
-    // all numbers less than eps sets to zero with function set_low_values_zero
-    if (s == 0.0) {
+    if (s <= eps) {
         return 0.0;
     }
 
     Type alpha = Type(s);
-    if (A(row, column) != 0.0) {
+    if (abs(A(row, column)) > eps) {
         alpha *= A(row, column) / abs(A(row, column));
     }
 
@@ -54,7 +53,7 @@ long double left_reflection(Matrix<Type>& A, const int row, const int column, Ma
     }
 
     long double coef = details::column_abs_under(u, 0, row);
-    // coef > 0 because exist |A(k, row)| > eps (otherwise s = 0.0)
+    // coef > 0 because exist |A(k, ind)| > eps / A.height() (otherwise s <= eps)
     u /= coef;
 
     Matrix<Type> P = Matrix<Type>::identity(A.height()) - Type(2.0) * u * conjugate(u);
@@ -73,17 +72,16 @@ long double right_reflection(Matrix<Type>& A, const int row, const int column, M
     assert(row >= 0 && row < A.height());
     assert(column >= 0 && column < A.width());
 
-    details::set_low_values_zero(A, eps);
+    // details::set_low_values_zero(A, eps);
     Matrix<Type> u(1, A.width());
     long double s = details::row_abs_under(A, row, column);
 
-    // all numbers less than eps sets to zero with function set_low_values_zero
-    if (s == 0.0) {
+    if (s <= eps) {
         return 0.0;
     }
 
     Type alpha = Type(s);
-    if (A(row, column) != 0.0) {
+    if (abs(A(row, column)) > eps) {
         alpha *= A(row, column) / abs(A(row, column));
     }
 
@@ -93,7 +91,7 @@ long double right_reflection(Matrix<Type>& A, const int row, const int column, M
     }
 
     long double coef = details::row_abs_under(u, 0, column);
-    // coef > 0 because exist |A(ind, k)| > eps (otherwise s = 0.0)
+    // coef > 0 because exist |A(ind, k)| > eps / A.width() (otherwise s <= eps)
     u /= coef;
 
     Matrix<Type> P = Matrix<Type>::identity(A.width()) - Type(2.0) * conjugate(u) * u;
