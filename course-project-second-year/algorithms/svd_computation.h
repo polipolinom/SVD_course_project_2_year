@@ -55,6 +55,8 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
         }
     }
 
+    std::cout << B1 << "\n============\n";
+
     Matrix<long double> left_qr = Matrix<long double>::identity(B1.height());
     Matrix<long double> right_qr = Matrix<long double>::identity(B1.width());
     auto result = details::apply_qr_for_bidiagonal(B1, &left_qr, &right_qr, eps);

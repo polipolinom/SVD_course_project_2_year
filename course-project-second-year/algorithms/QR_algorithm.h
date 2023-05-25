@@ -9,6 +9,7 @@
 #include "QR_decomposition.h"
 #include "bidiagonalization.h"
 #include "constants.h"
+#include "givens_rotation.h"
 
 namespace svd_computation {
 template <typename Type>
@@ -34,19 +35,16 @@ Matrix<Type> get_Schur_decomposition(const Matrix<Type>& A, const Type shift = 0
 }
 
 namespace details {
-inline long double get_Wilkinson_shift(const Matrix<long double>& A) {
-    assert(A.height() > 1);
-    size_t n = A.height();
-    long double shift = A(n - 1, n - 1);
-    long double sigma = (A(n - 2, n - 2) - A(n - 1, n - 1)) / 2.0;
+inline long double get_Wilkinson_shift(const long double n_1n_1, const long double n_1n, const long double nn) {
+    long double shift = nn;
+    long double sigma = (n_1n_1 - nn) / 2.0;
 
     long double coef = -1.0;
 
     if (sigma < 0) {
         coef = 1.0;
     }
-    shift += coef * (A(n - 1, n - 2) * A(n - 1, n - 2)) /
-             (abs(sigma) + sqrtl(sigma * sigma + (A(n - 1, n - 2) * A(n - 1, n - 2))));
+    shift += coef * (n_1n * n_1n) / (abs(sigma) + sqrtl(sigma * sigma + n_1n * n_1n));
 
     return shift;
 }
@@ -56,7 +54,7 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>&, Matrix<l
 
 inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis, Matrix<long double>* right_basis,
                          const long double eps = constants::DEFAULT_EPSILON) {
-    std::cout << "split\n";
+    // std::cout << "split\n";
 
     using Matrix = Matrix<long double>;
 
@@ -109,39 +107,78 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
     }
 
     Matrix result = A;
-    std::cout << "A:\n";
-    std::cout << A << std::endl << std::endl;
+    const int n = result.height();
     while (!is_diagonal(result, eps)) {
-        std::cout << "!!!!!\n";
-        std::cout << result << "\n\n";
-
-        Matrix M = transpose(result) * result;
-        long double shift = get_Wilkinson_shift(M);
-        for (size_t ind = 0; ind < result.height(); ++ind) {
-            if (abs(result(ind, ind)) < eps) {
-                shift = 0.0;
-            }
-        }
-
-        std::cout << "shift:" << shift << "\n";
-        auto M_with_shift = M - shift * Matrix::identity(M.height());
-        auto [Q, R] = get_QR_decomposition(M_with_shift, eps);
-        std::cout << "R:\n" << R << std::endl;
-
-        if (right_basis != nullptr) {
-            (*right_basis) *= Q;
-        }
-        auto l_basis = bidiagonalize_with_right_basis(result, Q, eps);
-        if (left_basis != nullptr) {
-            (*left_basis) *= l_basis;
-        }
-        result = transpose(l_basis) * result * Q;
-
-        std::cout << "\n=================================\n";
-
+        std::cout << result << "\n!!!!!!!!!!!!!!!\n";
         if (split(result, left_basis, right_basis, eps)) {
             return result;
         }
+
+        for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
+            if (abs(result(ind, ind)) <= eps) {
+                for (size_t k = ind + 1; k < result.height(); ++k) {
+                    std::cout << ind << std::endl;
+                    auto [cos, sin] = get_givens_rotation(result(k, k), result(ind, k), eps);
+                    std::cout << (Matrix){{cos, sin}, {-sin, cos}} * (Matrix){{result(ind, k)}, {result(k, k)}}
+                              << "\n``````\n";
+                    Matrix G = Matrix::identity(A.height());
+
+                    G(ind, ind) = cos;
+                    G(k, k) = cos;
+                    G(ind, k) = -sin;
+                    G(k, ind) = sin;
+
+                    result = transpose(G) * result;
+                }
+                std::cout << result << "\n``````````````````````\n";
+                split(result, left_basis, right_basis, eps);
+                return result;
+            }
+        }
+
+        long double n_2n_1 = 0;
+        if (n - 3 >= 0) {
+            n_2n_1 = result(n - 3, n - 2);
+        }
+        long double n_1n_1 = result(n - 2, n - 2);
+        long double n_1n = result(n - 2, n - 1);
+        long double nn = result(n - 1, n - 1);
+
+        long double shift =
+            get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
+
+        for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
+            Matrix T = Matrix::identity(result.height());
+            if (ind == 0) {
+                auto [cos, sin] =
+                    get_givens_rotation(result(0, 0) * result(0, 0) - shift, result(0, 0) * result(0, 1), eps);
+
+                T(0, 0) = cos;
+                T(0, 1) = sin;
+                T(1, 1) = cos;
+                T(1, 0) = -sin;
+
+                result *= T;
+            } else {
+                auto [cos, sin] = get_givens_rotation(result(ind - 1, ind), result(ind - 1, ind + 1), eps);
+                T(ind, ind) = cos;
+                T(ind, ind + 1) = sin;
+                T(ind + 1, ind + 1) = cos;
+                T(ind + 1, ind) = -sin;
+
+                result *= T;
+            }
+            Matrix S = Matrix::identity(result.height());
+            auto [cos, sin] = get_givens_rotation(result(ind, ind), result(ind + 1, ind));
+            S(ind, ind) = cos;
+            S(ind, ind + 1) = sin;
+            S(ind + 1, ind + 1) = cos;
+            S(ind + 1, ind) = -sin;
+
+            result = transpose(S) * result;
+        }
+
+        // std::cout << result << "\n##################\n";
     }
     set_low_values_zero(result);
     return result;
