@@ -72,7 +72,7 @@ inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis
                 (*left_basis) *= join_matrix(left_basis1, left_basis2);
             }
             if (right_basis != nullptr) {
-                (*right_basis) = join_matrix(right_basis1, right_basis2) * (*right_basis);
+                (*right_basis) *= join_matrix(right_basis1, right_basis2);
             }
             return true;
         }
@@ -181,7 +181,7 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
             }
             auto [cos, sin] = get_givens_rotation(result(ind, ind), result(ind + 1, ind));
 
-            multiplyRightGivens(result, cos, sin, ind, ind + 1);
+            multiplyLeftGivens(result, cos, sin, ind, ind + 1);
             if (left_basis != nullptr) {
                 multiplyRightGivens(*left_basis, cos, sin, ind, ind + 1);
             }

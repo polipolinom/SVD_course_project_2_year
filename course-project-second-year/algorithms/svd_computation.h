@@ -55,13 +55,20 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
         }
     }
 
-    std::cout << B1 << "\n============\n";
+    // std::cout << B1 << "\n============\n";
 
     Matrix<long double> left_qr = Matrix<long double>::identity(B1.height());
     Matrix<long double> right_qr = Matrix<long double>::identity(B1.width());
     auto result = details::apply_qr_for_bidiagonal(B1, &left_qr, &right_qr, eps);
 
-    std::cout << left_qr * result * right_qr << std::endl;
+    for (size_t i = 0; i < B1.width(); ++i) {
+        if (result(i, i) < 0.0) {
+            for (size_t j = 0; j < B1.height(); ++j) {
+                left_qr(j, i) *= -1;
+            }
+            result(i, i) *= -1;
+        }
+    }
 
     details::sort_singular_values(result, left_qr, right_qr);
 

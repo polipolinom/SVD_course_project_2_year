@@ -12,12 +12,15 @@
 
 int main() {
     using namespace svd_computation;
-    Matrix<long double> A = {{1, 1, 1, 1}, {0, 0, 0, 0}, {1, 0, 0, 1}, {0, 0, 0, 0}};
+    Matrix<long double> A = {{-999.998, 200., -899.999, 1500.},
+                             {-4000., 1400., -1800., 3000.},
+                             {-2000., 200., -2400., 4000.},
+                             {-2000., 200., -2400., 4000.}};
     Matrix<long double> U, V;
 
     // A = {{1, 1, 0}, {0, -1, 1}, {0, 0, 1}};
     auto B = compute_svd(A, &V, &U);
-    // std::cout << std::setprecision(10) << V * B * transpose(U);
+    std::cout << std::setprecision(10) << V * B * transpose(U);
 
     /*std::default_random_engine gen;
     std::uniform_real_distribution<long double> distribution(0.0, 1.0);
