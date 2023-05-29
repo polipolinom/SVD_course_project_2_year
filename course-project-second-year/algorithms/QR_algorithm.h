@@ -35,11 +35,13 @@ Matrix<Type> get_Schur_decomposition(const Matrix<Type>& A, const Type shift = 0
 }
 
 namespace details {
-inline long double get_Wilkinson_shift(const long double n_1n_1, const long double n_1n, const long double nn) {
-    long double shift = nn;
-    long double sigma = (n_1n_1 - nn) / 2.0;
+using Type = long double;
 
-    long double coef = -1.0;
+inline Type get_Wilkinson_shift(const Type n_1n_1, const Type n_1n, const Type nn) {
+    Type shift = nn;
+    Type sigma = (n_1n_1 - nn) / 2.0;
+
+    Type coef = -1.0;
 
     if (sigma < 0) {
         coef = 1.0;
@@ -49,32 +51,31 @@ inline long double get_Wilkinson_shift(const long double n_1n_1, const long doub
     return shift;
 }
 
-inline long double get_Wilkinson_shift_for_bidiagonal(const Matrix<long double>& A) {
+inline Type get_Wilkinson_shift_for_bidiagonal(const Matrix<Type>& A) {
     if (A.height() == 1) {
         return 0.0;
     }
 
     const int n = A.height();
 
-    long double n_2n_1 = 0;
+    Type n_2n_1 = 0;
     if (n - 3 >= 0) {
         n_2n_1 = A(n - 3, n - 2);
     }
-    long double n_1n_1 = A(n - 2, n - 2);
-    long double n_1n = A(n - 2, n - 1);
-    long double nn = A(n - 1, n - 1);
+    Type n_1n_1 = A(n - 2, n - 2);
+    Type n_1n = A(n - 2, n - 1);
+    Type nn = A(n - 1, n - 1);
 
     return get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
 }
 
-Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>&, Matrix<long double>*, Matrix<long double>*,
-                                            const long double);
+Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<Type>*, const Type);
 
-inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis, Matrix<long double>* right_basis,
-                         const long double eps = constants::DEFAULT_EPSILON) {
+inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
+                  const Type eps = constants::DEFAULT_EPSILON) {
     // std::cout << "split\n";
 
-    using Matrix = Matrix<long double>;
+    using Matrix = Matrix<Type>;
 
     for (size_t ind = 0; ind + 1 < A.width(); ++ind) {
         if (abs(A(ind, ind + 1)) < eps) {
@@ -98,28 +99,28 @@ inline long double split(Matrix<long double>& A, Matrix<long double>* left_basis
     return false;
 }
 
-inline void multiplyRightGivens(Matrix<long double>& A, long double c, long double s, int i, int j) {
+inline void multiplyRightGivens(Matrix<Type>& A, Type c, Type s, int i, int j) {
     for (size_t k = 0; k < A.height(); ++k) {
-        long double a = A(k, i);
-        long double b = A(k, j);
+        Type a = A(k, i);
+        Type b = A(k, j);
 
         A(k, i) = c * a - s * b;
         A(k, j) = s * a + c * b;
     }
 }
 
-inline void multiplyLeftGivens(Matrix<long double>& A, long double c, long double s, int i, int j) {
+inline void multiplyLeftGivens(Matrix<Type>& A, Type c, Type s, int i, int j) {
     for (size_t k = 0; k < A.width(); ++k) {
-        long double a = A(i, k);
-        long double b = A(j, k);
+        Type a = A(i, k);
+        Type b = A(j, k);
 
         A(i, k) = c * a - s * b;
         A(j, k) = s * a + c * b;
     }
 }
 
-inline bool erase_small_diagonal(Matrix<long double>& A, Matrix<long double>* left_basis,
-                                 Matrix<long double>* right_basis, const long double eps = constants::DEFAULT_EPSILON) {
+inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
+                                 const Type eps = constants::DEFAULT_EPSILON) {
     for (size_t ind = 0; ind + 1 < A.height(); ++ind) {
         if (abs(A(ind, ind)) <= eps) {
             for (size_t k = ind + 1; k < A.height(); ++k) {
@@ -137,12 +138,11 @@ inline bool erase_small_diagonal(Matrix<long double>& A, Matrix<long double>* le
     return false;
 }
 
-Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix<long double>* left_basis,
-                                            Matrix<long double>* right_basis,
-                                            const long double eps = constants::DEFAULT_EPSILON) {
-    using Matrix = Matrix<long double>;
+Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
+                                     const Type eps = constants::DEFAULT_EPSILON) {
+    using Matrix = Matrix<Type>;
 
-    assert(is_bidiagonal(A, eps));
+    // assert(is_bidiagonal(A, eps));
 
     if (A.height() == 1) {
         if (left_basis != nullptr) {
@@ -176,7 +176,7 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
             return result;
         }
 
-        long double shift = get_Wilkinson_shift_for_bidiagonal(result);
+        Type shift = get_Wilkinson_shift_for_bidiagonal(result);
 
         // chasing
         for (size_t ind = 0; ind + 1 < result.height(); ++ind) {

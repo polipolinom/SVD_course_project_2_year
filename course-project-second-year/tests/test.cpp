@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "test_complex.h"
+#include "test_vector.h"
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
