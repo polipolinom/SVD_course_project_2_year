@@ -4,6 +4,7 @@
 
 #include "../types/matrix.h"
 #include "../utils/complement_orthobase.h"
+#include "QR_algorithm.h"
 #include "QR_decomposition.h"
 #include "bidiagonalization.h"
 #include "constants.h"
@@ -32,14 +33,12 @@ void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& left_
 }
 }  // namespace details
 
-// TODO: B - vector of singular values
 template <typename Type>
-Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
-                                Matrix<Type>* right_basis = nullptr,
-                                const long double eps = constants::DEFAULT_EPSILON) {
+std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
+                                     Matrix<Type>* right_basis = nullptr,
+                                     const long double eps = constants::DEFAULT_EPSILON) {
     if (A.width() > A.height()) {
         auto sigma = compute_svd(conjugate(A), right_basis, left_basis, eps);
-        sigma.conjugate();
 
         return sigma;
     }
@@ -86,9 +85,9 @@ Matrix<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis 
         new_left_qr(ind, ind) = 1.0;
     }
 
-    Matrix<long double> sigma(B.height(), B.width());
+    std::vector<long double> sigma;
     for (size_t i = 0; i < result.width(); ++i) {
-        sigma(i, i) = result(i, i);
+        sigma.push_back(result(i, i));
     }
 
     if (left_basis != nullptr) {

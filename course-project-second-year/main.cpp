@@ -12,15 +12,17 @@
 
 int main() {
     using namespace svd_computation;
-    Matrix<long double> A = {{-999.998, 200., -899.999, 1500.},
-                             {-4000., 1400., -1800., 3000.},
-                             {-2000., 200., -2400., 4000.},
-                             {-2000., 200., -2400., 4000.}};
+    Matrix<long double> A = {
+        {-999.998, 200., -899.999}, {-4000., 1400., -1800.}, {-2000., 200., -2400.}, {-2000., 200., -2400.}};
     Matrix<long double> U, V;
 
     // A = {{1, 1, 0}, {0, -1, 1}, {0, 0, 1}};
     auto B = compute_svd(A, &V, &U);
-    std::cout << std::setprecision(10) << V * B * transpose(U);
+    Matrix<long double> Sigma(A.height(), A.width());
+    for (size_t ind = 0; ind < B.size(); ++ind) {
+        Sigma(ind, ind) = B[ind];
+    }
+    std::cout << std::setprecision(10) << V * Sigma * transpose(U);
 
     /*std::default_random_engine gen;
     std::uniform_real_distribution<long double> distribution(0.0, 1.0);

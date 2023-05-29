@@ -49,6 +49,24 @@ inline long double get_Wilkinson_shift(const long double n_1n_1, const long doub
     return shift;
 }
 
+inline long double get_Wilkinson_shift_for_bidiagonal(const Matrix<long double>& A) {
+    if (A.height() == 1) {
+        return 0.0;
+    }
+
+    const int n = A.height();
+
+    long double n_2n_1 = 0;
+    if (n - 3 >= 0) {
+        n_2n_1 = A(n - 3, n - 2);
+    }
+    long double n_1n_1 = A(n - 2, n - 2);
+    long double n_1n = A(n - 2, n - 1);
+    long double nn = A(n - 1, n - 1);
+
+    return get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
+}
+
 Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>&, Matrix<long double>*, Matrix<long double>*,
                                             const long double);
 
@@ -100,6 +118,25 @@ inline void multiplyLeftGivens(Matrix<long double>& A, long double c, long doubl
     }
 }
 
+inline bool erase_small_diagonal(Matrix<long double>& A, Matrix<long double>* left_basis,
+                                 Matrix<long double>* right_basis, const long double eps = constants::DEFAULT_EPSILON) {
+    for (size_t ind = 0; ind + 1 < A.height(); ++ind) {
+        if (abs(A(ind, ind)) <= eps) {
+            for (size_t k = ind + 1; k < A.height(); ++k) {
+                auto [cos, sin] = get_givens_rotation(A(k, k), A(ind, k), eps);
+
+                multiplyLeftGivens(A, cos, -sin, ind, k);
+                if (left_basis != nullptr) {
+                    multiplyRightGivens(*left_basis, cos, -sin, ind, k);
+                }
+            }
+            split(A, left_basis, right_basis, eps);
+            return true;
+        }
+    }
+    return false;
+}
+
 Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix<long double>* left_basis,
                                             Matrix<long double>* right_basis,
                                             const long double eps = constants::DEFAULT_EPSILON) {
@@ -127,43 +164,24 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
     }
 
     Matrix result = A;
-    const int n = result.height();
     int operations = 0;
-    while (!is_diagonal(result, eps) && operations < 50 * result.height()) {
+    while (!is_diagonal(result, eps) && operations < constants::MAX_OPERATIONS * result.height()) {
         operations++;
-        // std::cout << result << "\n!!!!!!!!!!!!!!!\n";
+
         if (split(result, left_basis, right_basis, eps)) {
             return result;
         }
 
-        for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
-            if (abs(result(ind, ind)) <= eps) {
-                for (size_t k = ind + 1; k < result.height(); ++k) {
-                    auto [cos, sin] = get_givens_rotation(result(k, k), result(ind, k), eps);
-
-                    multiplyLeftGivens(result, cos, -sin, ind, k);
-                    if (left_basis != nullptr) {
-                        multiplyRightGivens(*left_basis, cos, -sin, ind, k);
-                    }
-                }
-                split(result, left_basis, right_basis, eps);
-                return result;
-            }
+        if (erase_small_diagonal(result, left_basis, right_basis, eps)) {
+            return result;
         }
 
-        long double n_2n_1 = 0;
-        if (n - 3 >= 0) {
-            n_2n_1 = result(n - 3, n - 2);
-        }
-        long double n_1n_1 = result(n - 2, n - 2);
-        long double n_1n = result(n - 2, n - 1);
-        long double nn = result(n - 1, n - 1);
+        long double shift = get_Wilkinson_shift_for_bidiagonal(result);
 
-        long double shift =
-            get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
-
+        // chasing
         for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
             if (ind == 0) {
+                // first rotation with shift to equals to QR algorithms
                 auto [cos, sin] =
                     get_givens_rotation(result(0, 0) * result(0, 0) - shift, result(0, 0) * result(0, 1), eps);
 
@@ -186,8 +204,6 @@ Matrix<long double> apply_qr_for_bidiagonal(const Matrix<long double>& A, Matrix
                 multiplyRightGivens(*left_basis, cos, sin, ind, ind + 1);
             }
         }
-
-        // std::cout << result << "\n##################\n";
     }
     set_low_values_zero(result);
     return result;
