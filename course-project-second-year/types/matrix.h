@@ -165,11 +165,11 @@ class Matrix {
     friend Vector<Type> operator*(const Vector<Type>& lhs, const Matrix& rhs) noexcept {
         assert(lhs.size() == rhs.height() && lhs.orientation() == Vector<Type>::Orientation::Horizontal);
 
-        Vector<Type> result(Type(0.0), rhs.size(), Vector<Type>::Orientation::Horizontal);
+        Vector<Type> result(Type(0.0), rhs.width(), Vector<Type>::Orientation::Horizontal);
 
         for (size_t column = 0; column < rhs.width(); ++column) {
             for (size_t row = 0; row < lhs.size(); ++row) {
-                result[column] += rhs[row] * rhs(row, column);
+                result[column] += lhs[row] * rhs(row, column);
             }
         }
 

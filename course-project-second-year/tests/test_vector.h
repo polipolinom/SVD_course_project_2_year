@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <math.h>
 
 #include "../types/complex.h"
 #include "../types/vector.h"
