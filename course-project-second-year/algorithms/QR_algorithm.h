@@ -142,7 +142,7 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
                                      const Type eps = constants::DEFAULT_EPSILON) {
     using Matrix = Matrix<Type>;
 
-    // assert(is_bidiagonal(A, eps));
+    assert(is_bidiagonal(A, eps));
 
     if (A.height() == 1) {
         if (left_basis != nullptr) {

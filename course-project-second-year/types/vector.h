@@ -180,7 +180,7 @@ template <typename Type>
 Type dot_product(const Vector<Type>& lhs, const Vector<Type>& rhs) noexcept;
 
 template <>
-long double dot_product(const Vector<long double>& lhs, const Vector<long double>& rhs) noexcept {
+inline long double dot_product(const Vector<long double>& lhs, const Vector<long double>& rhs) noexcept {
     assert(lhs.size() == rhs.size() && lhs.orientation() == Vector<long double>::Orientation::Horizontal &&
            rhs.orientation() == Vector<long double>::Orientation::Vertical);
     long double res = 0;
@@ -191,7 +191,7 @@ long double dot_product(const Vector<long double>& lhs, const Vector<long double
 }
 
 template <>
-Complex dot_product(const Vector<Complex>& lhs, const Vector<Complex>& rhs) noexcept {
+inline Complex dot_product(const Vector<Complex>& lhs, const Vector<Complex>& rhs) noexcept {
     assert(lhs.size() == rhs.size() && lhs.orientation() == Vector<Complex>::Orientation::Horizontal &&
            rhs.orientation() == Vector<Complex>::Orientation::Vertical);
     Complex res = 0;

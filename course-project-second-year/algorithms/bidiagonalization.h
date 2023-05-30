@@ -7,6 +7,7 @@
 #include "../types/vector.h"
 #include "../utils/complement_orthobase.h"
 #include "../utils/set_values.h"
+#include "householder_reflections.h"
 
 namespace svd_computation {
 template <typename Type>

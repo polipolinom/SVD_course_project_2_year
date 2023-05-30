@@ -39,11 +39,8 @@ bool is_tridiagonal(const Matrix<Type>& A, const long double eps = constants::DE
 
 template <typename Type>
 bool is_bidiagonal(const Matrix<Type>& A, const long double eps = constants::DEFAULT_EPSILON) {
-    if (A.height() != A.width()) {
-        return false;
-    }
     for (size_t i = 0; i < A.height(); ++i) {
-        for (size_t j = 0; j < i; ++j) {
+        for (size_t j = 0; j < std::min(i, A.width()); ++j) {
             if (abs(A(i, j)) > eps) {
                 return false;
             }
