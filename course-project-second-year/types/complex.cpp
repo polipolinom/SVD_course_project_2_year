@@ -127,6 +127,10 @@ Complex conjugate(const Complex& num) {
     return {num.Re(), -num.Im()};
 }
 
+long double conjugate(const long double& num) {
+    return num;
+}
+
 // returns sqrt with argument in [0, pi)
 Complex sqrt(const Complex& num) {
     Complex::Type abs_num = abs(num);

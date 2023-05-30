@@ -50,6 +50,7 @@ class Complex {
 Complex::Type abs(const Complex&);
 Complex::Type arg(const Complex&);
 Complex conjugate(const Complex&);
+long double conjugate(const long double&);
 Complex sqrt(const Complex&);
 long double sqrt(const long double&);
 

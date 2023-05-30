@@ -71,5 +71,36 @@ bool is_diagonal(const Matrix<Type>& A, const long double eps = constants::DEFAU
     }
     return true;
 }
+
+template <typename Type>
+bool is_zero(const Matrix<Type>& A, const long double eps = constants::DEFAULT_EPSILON) {
+    for (int i = 0; i < A.height(); ++i) {
+        for (int j = 0; j < A.width(); ++j) {
+            if (abs(A(i, j)) > eps) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+template <typename Type>
+bool is_unitary(const Matrix<Type>& A, const long double eps = constants::DEFAULT_EPSILON) {
+    if (A.height() != A.width()) {
+        return false;
+    }
+
+    Matrix<Type> B = A * conjugate(A) - Matrix<Type>::identity(A.height());
+    if (!is_zero(B)) {
+        return false;
+    }
+
+    B = conjugate(A) * A - Matrix<Type>::identity(A.height());
+    if (!is_zero(B)) {
+        return false;
+    }
+
+    return true;
+}
 }  // namespace details
 }  // namespace svd_computation

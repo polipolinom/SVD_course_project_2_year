@@ -24,7 +24,7 @@ int main() {
     }
     std::cout << std::setprecision(10) << V * Sigma * transpose(U);*/
 
-    Matrix<long double> A(45, 45);
+    /*Matrix<long double> A(45, 45);
     Matrix<long double> U, V;
 
     std::default_random_engine gen;
@@ -55,5 +55,10 @@ int main() {
 
         std::cout << mx << std::endl;
         std::cout << "Done!" << std::endl;
-    }
+    }*/
+
+    Matrix<Complex> A = {{Complex(1, 2), Complex(3, 2)}, {Complex(3, 4), Complex(0, 5)}};
+    // Matrix<long double> A = {{1, 2}, {3, 4}};
+    A = bidiagonalize(A);
+    std::cout << A << std::endl;
 }

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "test_QR_decomposition.h"
 #include "test_complex.h"
 #include "test_matrix.h"
 #include "test_vector.h"

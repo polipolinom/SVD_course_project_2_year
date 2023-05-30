@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include "../types/complex.h"
 #include "../types/matrix.h"
 #include "../types/vector.h"
 

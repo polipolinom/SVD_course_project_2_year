@@ -10,11 +10,9 @@
 
 namespace svd_computation {
 template <typename Type>
-Matrix<long double> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
-                                  Matrix<Type>* right_basis = nullptr,
-                                  const long double eps = constants::DEFAULT_EPSILON) {
+Matrix<Type> bidiagonalize(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
+                           Matrix<Type>* right_basis = nullptr, const long double eps = constants::DEFAULT_EPSILON) {
     Matrix<Type> B = A;
-    Matrix<long double> result(A.height(), A.width());
     if (left_basis != nullptr) {
         *left_basis = Matrix<Type>::identity(A.height());
     }
