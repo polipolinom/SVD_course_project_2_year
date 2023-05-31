@@ -89,10 +89,11 @@ class Matrix {
         return result;
     }
 
-    static Matrix diagonal(std::vector<Type> diagonal) noexcept {
-        assert(diagonal.size() > 0);
+    static Matrix diagonal(std::vector<Type> diagonal, int height, int width) noexcept {
+        assert(height > 0);
+        assert(width > 0);
 
-        Matrix result(diagonal.size(), diagonal.size());
+        Matrix result(height, width);
         for (size_t ind = 0; ind < diagonal.size(); ++ind) {
             result(ind, ind) = diagonal[ind];
         }

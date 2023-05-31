@@ -71,14 +71,14 @@ inline Type get_Wilkinson_shift_for_bidiagonal(const Matrix<Type>& A) {
 
 Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<Type>*, const Type);
 
-inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
+inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis, const Type eps_cmp,
                   const Type eps = constants::DEFAULT_EPSILON) {
     // std::cout << "split\n";
 
     using Matrix = Matrix<Type>;
 
     for (size_t ind = 0; ind + 1 < A.width(); ++ind) {
-        if (abs(A(ind, ind + 1)) < eps) {
+        if (abs(A(ind, ind + 1)) < eps_cmp) {
             auto [result1, result2] = split_matrix(A, ind, ind);
             Matrix left_basis1 = Matrix::identity(ind + 1);
             Matrix right_basis1 = Matrix::identity(ind + 1);
@@ -120,7 +120,7 @@ inline void multiplyLeftGivens(Matrix<Type>& A, Type c, Type s, int i, int j) {
 }
 
 inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
-                                 const Type eps = constants::DEFAULT_EPSILON) {
+                                 const Type eps_cmp, const Type eps = constants::DEFAULT_EPSILON) {
     for (size_t ind = 0; ind + 1 < A.height(); ++ind) {
         if (abs(A(ind, ind)) <= eps) {
             for (size_t k = ind + 1; k < A.height(); ++k) {
@@ -147,9 +147,6 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
     if (A.height() == 1) {
         if (left_basis != nullptr) {
             (*left_basis) = {{1.0}};
-            if (A(0, 0) < -eps) {
-                (*left_basis) = {{-1.0}};
-            }
         }
         if (right_basis != nullptr) {
             (*right_basis) = {{1.0}};
@@ -157,22 +154,34 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
         if (abs(A(0, 0)) <= eps) {
             return {{0.0}};
         }
-        if (A(0, 0) < -eps) {
-            return {{-A(0, 0)}};
-        }
         return A;
     }
 
     Matrix result = A;
     int operations = 0;
-    while (!is_diagonal(result, eps) && operations < constants::MAX_OPERATIONS * result.height()) {
+    long double new_eps = eps;
+    while (operations < constants::MAX_OPERATIONS * result.height()) {
+        new_eps = result(result.height() - 1, result.height() - 1);
+        for (size_t i = 0; i < result.height() - 1; ++i) {
+            long double sum = abs(result(i, i)) + abs(result(i, i + 1));
+            new_eps = std::max(new_eps, sum);
+        }
+
+        new_eps *= eps;
+
+        if (is_diagonal(A, new_eps)) {
+            break;
+        }
+
         operations++;
 
-        if (split(result, left_basis, right_basis, eps)) {
+        // std::cout << "Result:\n" << result << "\n\n";
+
+        if (split(result, left_basis, right_basis, new_eps, eps)) {
             return result;
         }
 
-        if (erase_small_diagonal(result, left_basis, right_basis, eps)) {
+        if (erase_small_diagonal(result, left_basis, right_basis, new_eps, eps)) {
             return result;
         }
 
@@ -197,7 +206,7 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
                     multiplyRightGivens(*right_basis, cos, sin, ind, ind + 1);
                 }
             }
-            auto [cos, sin] = get_givens_rotation(result(ind, ind), result(ind + 1, ind));
+            auto [cos, sin] = get_givens_rotation(result(ind, ind), result(ind + 1, ind), eps);
 
             multiplyLeftGivens(result, cos, sin, ind, ind + 1);
             if (left_basis != nullptr) {

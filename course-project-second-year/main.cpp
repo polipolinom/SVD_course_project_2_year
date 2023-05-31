@@ -12,53 +12,54 @@
 
 int main() {
     using namespace svd_computation;
-    /*Matrix<long double> A = {
-        {-999.998, 200., -899.999}, {-4000., 1400., -1800.}, {-2000., 200., -2400.}, {-2000., 200., -2400.}};
+    Matrix<long double> U, V;
+    Matrix<long double> A = {{-77509, -20524.6, -81415.3}};
 
-
-    // A = {{1, 1, 0}, {0, -1, 1}, {0, 0, 1}};
     auto B = compute_svd(A, &V, &U);
+
+    std::cout << U << std::endl;
     Matrix<long double> Sigma(A.height(), A.width());
     for (size_t ind = 0; ind < B.size(); ++ind) {
         Sigma(ind, ind) = B[ind];
     }
-    std::cout << std::setprecision(10) << V * Sigma * transpose(U);*/
+    std::cout << std::fixed << std::setprecision(10) << Sigma << "\n\n";
+    std::cout << std::setprecision(10) << V * Sigma * transpose(U);
 
-    /*Matrix<long double> A(45, 45);
-    Matrix<long double> U, V;
-
-    std::default_random_engine gen;
-    std::uniform_real_distribution<long double> distribution(0.0, 1.0);
+    /*std::default_random_engine gen;
+    std::uniform_real_distribution<long double> distribution(-1e5, 1e5);
 
     while (true) {
-        for (size_t i = 0; i < 45; i++) {
-            for (size_t j = 0; j < 45; j++) {
+        int N = 100;
+
+        Matrix<long double> A(N, N);
+
+        for (size_t i = 0; i < N; i++) {
+            for (size_t j = 0; j < N; j++) {
                 A(i, j) = distribution(gen);
             }
         }
-        auto s = compute_svd(A, &U, &V);
-        Matrix<long double> Sigma(45, 45);
 
-        for (size_t i = 0; i < 45; ++i) {
+        auto s = compute_svd(A, &U, &V);
+        Matrix<long double> Sigma(N, N);
+
+        for (size_t i = 0; i < N; ++i) {
             Sigma(i, i) = s[i];
         }
 
         auto ans = U * Sigma * transpose(V) - A;
 
-        long double mx = 0;
+        long double mx = 0.0;
+        long double Mx = 0.0;
 
-        for (size_t i = 0; i < 45; ++i) {
-            for (size_t j = 0; j < 45; ++j) {
-                mx = std::max(mx, abs(ans(i, j)));
+        for (size_t i = 0; i < N; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+                long double diff = ans(i, j);
+                mx = std::max(mx, abs(diff));
+                Mx = std::max(Mx, abs(A(i, j)));
             }
         }
 
-        std::cout << mx << std::endl;
+        std::cout << mx << " " << Mx << std::endl;
         std::cout << "Done!" << std::endl;
     }*/
-
-    Matrix<Complex> A = {{Complex(1, 2), Complex(3, 2)}, {Complex(3, 4), Complex(0, 5)}};
-    // Matrix<long double> A = {{1, 2}, {3, 4}};
-    A = bidiagonalize(A);
-    std::cout << A << std::endl;
 }

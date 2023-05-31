@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
+#pragma once
 
-#include <random>
+#include <gtest/gtest.h>
 
 #include "../algorithms/QR_decomposition.h"
 #include "../types/complex.h"

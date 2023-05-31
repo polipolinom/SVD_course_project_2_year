@@ -49,9 +49,13 @@ std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_b
     size_t min_size = B.width();
     Matrix<long double> B1(min_size, min_size);
     for (size_t i = 0; i < min_size; ++i) {
-        for (size_t j = 0; j < min_size; ++j) {
-            B1(i, j) = B(i, j);
+        B1(i, i) = to_long_double(B(i, i));
+        if (i + 1 < min_size) {
+            B1(i, i + 1) = to_long_double(B(i, i + 1));
         }
+        /*for (size_t j = 0; j < min_size; ++j) {
+            B1(i, j) = to_long_double(B(i, j));
+        }*/
     }
 
     // std::cout << B1 << "\n============\n";
@@ -71,18 +75,18 @@ std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_b
 
     details::sort_singular_values(result, left_qr, right_qr);
 
-    // std::cout << result << "\n\n";
-
-    Matrix<long double> new_left_qr(A.height(), A.height());
+    Matrix<Type> new_left_qr(A.height(), A.height());
+    Matrix<Type> new_right_qr(A.width(), A.width());
 
     for (size_t row = 0; row < A.width(); ++row) {
         for (size_t column = 0; column < A.width(); ++column) {
-            new_left_qr(row, column) = left_qr(row, column);
+            new_left_qr(row, column) = Type(left_qr(row, column));
+            new_right_qr(row, column) = Type(right_qr(row, column));
         }
     }
 
-    for (size_t ind = A.height(); ind < A.width(); ++ind) {
-        new_left_qr(ind, ind) = 1.0;
+    for (size_t ind = A.width(); ind < A.height(); ++ind) {
+        new_left_qr(ind, ind) = Type(1.0);
     }
 
     std::vector<long double> sigma;
@@ -94,7 +98,7 @@ std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_b
         (*left_basis) = left_bidiag * new_left_qr;
     }
     if (right_basis != nullptr) {
-        (*right_basis) = right_bidiag * right_qr;
+        (*right_basis) = right_bidiag * new_right_qr;
     }
 
     return sigma;

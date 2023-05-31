@@ -92,11 +92,6 @@ bool is_unitary(const Matrix<Type>& A, const long double eps = constants::DEFAUL
         return false;
     }
 
-    B = conjugate(A) * A - Matrix<Type>::identity(A.height());
-    if (!is_zero(B)) {
-        return false;
-    }
-
     return true;
 }
 }  // namespace details

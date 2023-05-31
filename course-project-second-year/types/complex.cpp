@@ -4,6 +4,7 @@
 
 #include <math.h>
 
+#include <cassert>
 #include <cstdlib>
 #include <iomanip>
 #include <string>
@@ -127,7 +128,7 @@ Complex conjugate(const Complex& num) {
     return {num.Re(), -num.Im()};
 }
 
-long double conjugate(const long double& num) {
+long double conjugate(const long double& num) noexcept {
     return num;
 }
 
@@ -168,6 +169,14 @@ std::ostream& operator<<(std::ostream& out, const Complex& x) noexcept {
     }
     out << x.Im() << "i";
     return out;
+}
+
+long double to_long_double(const Complex& num) noexcept {
+    return num.Re();
+}
+
+long double to_long_double(const long double& num) noexcept {
+    return num;
 }
 
 }  // namespace svd_computation
