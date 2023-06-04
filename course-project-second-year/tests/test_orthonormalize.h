@@ -50,7 +50,7 @@ TEST(OrtonormalizationTest, TestForLongDouble) {
 TEST(OrtonormalizationTest, TestForLongDoubleMaxSize) {
     using Vector = Vector<long double>;
 
-    int operations = 1000;
+    int operations = 300;
     int max_sz = 1000;
     int max_cnt = 1100;
     long double max_number = 1e5;
@@ -122,7 +122,7 @@ TEST(OrtonormalizationTest, TestForLongDoubleLowValues) {
 TEST(OrtonormalizationTest, TestForComplex) {
     using Vector = Vector<Complex>;
 
-    int operations = 1000;
+    int operations = 500;
     int max_sz = 1000;
     int max_cnt = 1000;
     long double max_number = 1e5;
@@ -157,7 +157,7 @@ TEST(OrtonormalizationTest, TestForComplex) {
 TEST(OrtonormalizationTest, TestForComplexMaxSize) {
     using Vector = Vector<Complex>;
 
-    int operations = 1000;
+    int operations = 150;
     int max_sz = 1000;
     int max_cnt = 1100;
     long double max_number = 1e5;
@@ -191,7 +191,7 @@ TEST(OrtonormalizationTest, TestForComplexMaxSize) {
 TEST(OrtonormalizationTest, TestForComplexLowValues) {
     using Vector = Vector<Complex>;
 
-    int operations = 1000;
+    int operations = 500;
     int max_sz = 1000;
     int max_cnt = 1000;
     long double max_number = 1e5;

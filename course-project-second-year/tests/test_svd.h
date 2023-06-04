@@ -6,6 +6,7 @@
 #include "../types/complex.h"
 #include "../types/matrix.h"
 #include "../utils/checking_matrices.h"
+#include "Eigen/eigen"
 #include "random_objects.h"
 
 using namespace svd_computation;

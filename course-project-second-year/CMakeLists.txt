@@ -23,3 +23,5 @@ FetchContent_MakeAvailable(googletest)
 
 target_link_libraries(course_project_test gtest_main)
 add_test(NAME test_all COMMAND course_project_test)
+
+target_include_directories(course_project_test PUBLIC ../eigen)
