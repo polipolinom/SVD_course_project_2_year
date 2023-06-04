@@ -207,20 +207,20 @@ long double abs(Vector<Type> v) noexcept;
 template <>
 inline long double abs(Vector<long double> v) noexcept {
     if (v.orientation() == Vector<long double>::Orientation::Vertical) {
-        long double res = dot_product<long double>(transpose(v), v);
+        long double res = dot_product(transpose(v), v);
         return sqrtl(res);
     }
-    long double res = dot_product<long double>(v, transpose(v));
+    long double res = dot_product(v, transpose(v));
     return sqrtl(res);
 }
 
 template <>
 inline long double abs(Vector<Complex> v) noexcept {
     if (v.orientation() == Vector<Complex>::Orientation::Vertical) {
-        long double res = dot_product<Complex>(transpose(v), v).Re();
+        long double res = dot_product(transpose(v), v).Re();
         return sqrtl(res);
     }
-    long double res = dot_product<Complex>(v, transpose(v)).Re();
+    long double res = dot_product(v, transpose(v)).Re();
     return sqrtl(res);
 }
 

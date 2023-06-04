@@ -35,9 +35,6 @@ Vector<Type> add_one_vector(const std::vector<Vector<Type>>& A, const size_t len
 
     Vector<Type> result(length, orientation);
     for (size_t ind = 0; ind < length; ++ind) {
-        /*for (size_t ind = 0; ind < result.size(); ++ind) {
-            result[ind] = distribution(gen);
-        }*/
         result = Vector<Type>::standart_basis(ind, length, orientation);
         for (auto v : A) {
             if (v.orientation() == Vector<Type>::Orientation::Vertical) {

@@ -53,12 +53,7 @@ std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_b
         if (i + 1 < min_size) {
             B1(i, i + 1) = to_long_double(B(i, i + 1));
         }
-        /*for (size_t j = 0; j < min_size; ++j) {
-            B1(i, j) = to_long_double(B(i, j));
-        }*/
     }
-
-    // std::cout << B1 << "\n============\n";
 
     Matrix<long double> left_qr = Matrix<long double>::identity(B1.height());
     Matrix<long double> right_qr = Matrix<long double>::identity(B1.width());

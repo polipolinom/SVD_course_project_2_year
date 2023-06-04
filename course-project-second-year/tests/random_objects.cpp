@@ -1,4 +1,4 @@
-#include "random_matrix.h"
+#include "random_objects.h"
 
 #include <cassert>
 #include <chrono>
@@ -41,6 +41,40 @@ Matrix<Complex> get_random_complex_matrix(int min_sz, int max_sz, long double ma
         for (int j = 0; j < m; ++j) {
             A(i, j) = Complex(distribution(rnd), distribution(rnd));
         }
+    }
+
+    return A;
+}
+
+Vector<long double> get_random_double_vector(int min_sz, int max_sz, long double max_number) {
+    assert(max_sz > 0);
+    assert(min_sz > 0);
+
+    std::mt19937 rnd(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    std::uniform_real_distribution<long double> distribution(-max_number, max_number);
+
+    int n = rnd() % (max_sz - min_sz + 1) + min_sz;
+
+    Vector<long double> A(n);
+    for (int i = 0; i < n; ++i) {
+        A[i] = distribution(rnd);
+    }
+
+    return A;
+}
+
+Vector<Complex> get_random_complex_vector(int min_sz, int max_sz, long double max_number) {
+    assert(max_sz > 0);
+    assert(min_sz > 0);
+
+    std::mt19937 rnd(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    std::uniform_real_distribution<long double> distribution(-max_number, max_number);
+
+    int n = rnd() % (max_sz - min_sz + 1) + min_sz;
+
+    Vector<Complex> A(n);
+    for (int i = 0; i < n; ++i) {
+        A[i] = Complex(distribution(rnd), distribution(rnd));
     }
 
     return A;

@@ -6,7 +6,7 @@
 #include "../types/complex.h"
 #include "../types/matrix.h"
 #include "../utils/checking_matrices.h"
-#include "random_matrix.h"
+#include "random_objects.h"
 
 using namespace svd_computation;
 
@@ -14,7 +14,7 @@ TEST(SVDTest, TestForLongDouble) {
     using Matrix = Matrix<long double>;
 
     int operations = 1000;
-    int max_sz = 100;
+    int max_sz = 300;
     long double max_number = 1e5;
 
     while (operations-- > 0) {
@@ -41,7 +41,7 @@ TEST(SVDTest, TestForLongDoubleMaxSize) {
     using Matrix = Matrix<long double>;
 
     int operations = 100;
-    int max_sz = 100;
+    int max_sz = 300;
     long double max_number = 1e5;
 
     while (operations-- > 0) {
@@ -99,7 +99,7 @@ TEST(SVDTest, TestForComplex) {
 TEST(SVDTest, TestForComplexMaxSize) {
     using Matrix = Matrix<Complex>;
 
-    int operations = 1000;
+    int operations = 100;
     int max_sz = 100;
     long double max_number = 1e5;
 

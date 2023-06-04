@@ -73,8 +73,6 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<
 
 inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis, const Type eps_cmp,
                   const Type eps = constants::DEFAULT_EPSILON) {
-    // std::cout << "split\n";
-
     using Matrix = Matrix<Type>;
 
     for (size_t ind = 0; ind + 1 < A.width(); ++ind) {
@@ -174,8 +172,6 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
         }
 
         operations++;
-
-        // std::cout << "Result:\n" << result << "\n\n";
 
         if (split(result, left_basis, right_basis, new_eps, eps)) {
             return result;

@@ -9,7 +9,7 @@ add_library(course_project_lib types/complex.cpp utils/parser.cpp)
 add_executable(course_project main.cpp)
 target_link_libraries(course_project course_project_lib)
 
-add_executable(course_project_test tests/test.cpp tests/random_matrix.cpp)
+add_executable(course_project_test tests/test.cpp tests/random_objects.cpp)
 target_link_libraries(course_project_test course_project_lib)
 
 include(FetchContent)
