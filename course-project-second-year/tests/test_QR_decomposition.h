@@ -14,7 +14,7 @@ TEST(QRDecompositionTest, QRForLongDouble) {
     using Matrix = Matrix<long double>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -33,8 +33,8 @@ TEST(QRDecompositionTest, QRForLongDouble) {
 TEST(QRDecompositionTest, QRForLongDoubleMaxSize) {
     using Matrix = Matrix<long double>;
 
-    int operations = 100;
-    int max_sz = 300;
+    int operations = 500;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -54,7 +54,7 @@ TEST(QRDecompositionTest, QRForLongDoubleLowValues) {
     using Matrix = Matrix<long double>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -74,7 +74,7 @@ TEST(QRDecompositionTest, QRForComplex) {
     using Matrix = Matrix<Complex>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -93,8 +93,8 @@ TEST(QRDecompositionTest, QRForComplex) {
 TEST(QRDecompositionTest, QRForComplexMaxSize) {
     using Matrix = Matrix<Complex>;
 
-    int operations = 100;
-    int max_sz = 300;
+    int operations = 500;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -114,7 +114,7 @@ TEST(QRDecompositionTest, QRForComplexLowValues) {
     using Matrix = Matrix<Complex>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;

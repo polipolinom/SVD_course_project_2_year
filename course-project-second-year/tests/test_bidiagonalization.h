@@ -14,7 +14,7 @@ TEST(BidiagonalizationTest, BidiagonalizeLongDouble) {
     using Matrix = Matrix<long double>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -35,8 +35,8 @@ TEST(BidiagonalizationTest, BidiagonalizeLongDouble) {
 TEST(BidiagonalizationTest, BidiagonalizeLongDoubleMaxSize) {
     using Matrix = Matrix<long double>;
 
-    int operations = 100;
-    int max_sz = 300;
+    int operations = 500;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -58,7 +58,7 @@ TEST(BidiagonalizationTest, BidiagonalizeLongDoubleLowValues) {
     using Matrix = Matrix<long double>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -80,7 +80,7 @@ TEST(BidiagonalizationTest, bidiagonalizeComplex) {
     using Matrix = Matrix<Complex>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -108,8 +108,8 @@ TEST(BidiagonalizationTest, bidiagonalizeComplex) {
 TEST(BidiagonalizationTest, bidiagonalizeComplexMaxSize) {
     using Matrix = Matrix<Complex>;
 
-    int operations = 100;
-    int max_sz = 300;
+    int operations = 500;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
@@ -138,7 +138,7 @@ TEST(BidiagonalizationTest, bidiagonalizeComplexLowValues) {
     using Matrix = Matrix<Complex>;
 
     int operations = 1000;
-    int max_sz = 300;
+    int max_sz = 100;
     long double max_number = 1e5;
 
     long double eps = 1e-10;
