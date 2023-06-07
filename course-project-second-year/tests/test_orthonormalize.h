@@ -106,9 +106,6 @@ TEST(OrtonormalizationTest, TestForLongDoubleLowValues) {
         for (size_t i = 0; i < system.size(); ++i) {
             for (size_t j = 0; j < system.size(); ++j) {
                 if (i != j) {
-                    if (isnan(dot_product(transpose(system[i]), system[j]))) {
-                        exit(0);
-                    }
                     EXPECT_NEAR(dot_product(transpose(system[i]), system[j]), 0.0, eps);
                     continue;
                 }

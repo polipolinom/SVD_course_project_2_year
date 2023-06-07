@@ -18,6 +18,8 @@ TEST(SVDTest, TestForLongDouble) {
     int max_sz = 100;
     long double max_number = 1e5;
 
+    long double eps = 1e-10;
+
     while (operations-- > 0) {
         auto A = get_random_double_matrix(1, max_sz, max_number);
 
@@ -31,10 +33,10 @@ TEST(SVDTest, TestForLongDouble) {
 
         int mx = std::max(A.height(), A.width());
 
-        EXPECT_TRUE(details::is_unitary(left, 1e-10));
-        EXPECT_TRUE(details::is_unitary(right, 1e-10));
+        EXPECT_TRUE(details::is_unitary(left, eps));
+        EXPECT_TRUE(details::is_unitary(right, eps));
         EXPECT_TRUE(
-            details::is_zero(left * Matrix::diagonal(sigma, A.height(), A.width()) * conjugate(right) - A, 1e-10));
+            details::is_zero(left * Matrix::diagonal(sigma, A.height(), A.width()) * conjugate(right) - A, eps));
     }
 }
 
@@ -44,6 +46,8 @@ TEST(SVDTest, TestForLongDoubleMaxSize) {
     int operations = 500;
     int max_sz = 100;
     long double max_number = 1e5;
+
+    long double eps = 1e-10;
 
     while (operations-- > 0) {
         auto A = get_random_double_matrix(max_sz, max_sz, max_number);
@@ -58,10 +62,39 @@ TEST(SVDTest, TestForLongDoubleMaxSize) {
 
         int mx = std::max(A.height(), A.width());
 
-        EXPECT_TRUE(details::is_unitary(left, 1e-10));
-        EXPECT_TRUE(details::is_unitary(right, 1e-10));
+        EXPECT_TRUE(details::is_unitary(left, eps));
+        EXPECT_TRUE(details::is_unitary(right, eps));
         EXPECT_TRUE(
-            details::is_zero(left * Matrix::diagonal(sigma, A.height(), A.width()) * conjugate(right) - A, 1e-10));
+            details::is_zero(left * Matrix::diagonal(sigma, A.height(), A.width()) * conjugate(right) - A, eps));
+    }
+}
+
+TEST(SVDTest, TestForLongDoubleLowValues) {
+    using Matrix = Matrix<long double>;
+
+    int operations = 500;
+    int max_sz = 100;
+    long double max_number = 1e5;
+
+    long double eps = 1e-10;
+
+    while (operations-- > 0) {
+        auto A = get_random_double_matrix(1.0, max_sz, 1.0);
+
+        Matrix left, right;
+        auto sigma = compute_svd(A, &left, &right);
+
+        // check in sigma values > 0
+        for (auto s : sigma) {
+            EXPECT_TRUE(s >= 0);
+        }
+
+        int mx = std::max(A.height(), A.width());
+
+        EXPECT_TRUE(details::is_unitary(left, eps));
+        EXPECT_TRUE(details::is_unitary(right, eps));
+        EXPECT_TRUE(
+            details::is_zero(left * Matrix::diagonal(sigma, A.height(), A.width()) * conjugate(right) - A, eps));
     }
 }
 
@@ -71,6 +104,8 @@ TEST(SVDTest, TestForComplex) {
     int operations = 1000;
     int max_sz = 100;
     long double max_number = 1e5;
+
+    long double eps = 1e-10;
 
     while (operations-- > 0) {
         auto A = get_random_complex_matrix(1, max_sz, max_number);
@@ -90,10 +125,10 @@ TEST(SVDTest, TestForComplex) {
 
         int mx = std::max(A.height(), A.width());
 
-        EXPECT_TRUE(details::is_unitary(left, 1e-10));
-        EXPECT_TRUE(details::is_unitary(right, 1e-10));
+        EXPECT_TRUE(details::is_unitary(left, eps));
+        EXPECT_TRUE(details::is_unitary(right, eps));
         EXPECT_TRUE(details::is_zero(
-            left * Matrix::diagonal(sigma_complex, A.height(), A.width()) * conjugate(right) - A, 1e-10));
+            left * Matrix::diagonal(sigma_complex, A.height(), A.width()) * conjugate(right) - A, eps));
     }
 }
 
@@ -103,6 +138,8 @@ TEST(SVDTest, TestForComplexMaxSize) {
     int operations = 500;
     int max_sz = 100;
     long double max_number = 1e5;
+
+    long double eps = 1e-10;
 
     while (operations-- > 0) {
         auto A = get_random_complex_matrix(max_sz, max_sz, max_number);
@@ -122,10 +159,44 @@ TEST(SVDTest, TestForComplexMaxSize) {
 
         int mx = std::max(A.height(), A.width());
 
-        EXPECT_TRUE(details::is_unitary(left, 1e-10));
-        EXPECT_TRUE(details::is_unitary(right, 1e-10));
+        EXPECT_TRUE(details::is_unitary(left, eps));
+        EXPECT_TRUE(details::is_unitary(right, eps));
         EXPECT_TRUE(details::is_zero(
-            left * Matrix::diagonal(sigma_complex, A.height(), A.width()) * conjugate(right) - A, 1e-10));
+            left * Matrix::diagonal(sigma_complex, A.height(), A.width()) * conjugate(right) - A, eps));
+    }
+}
+
+TEST(SVDTest, TestForComplexLowValues) {
+    using Matrix = Matrix<Complex>;
+
+    int operations = 1000;
+    int max_sz = 100;
+    long double max_number = 1e5;
+
+    long double eps = 1e-10;
+
+    while (operations-- > 0) {
+        auto A = get_random_complex_matrix(1, max_sz, 1.0);
+
+        Matrix left, right;
+        auto sigma = compute_svd(A, &left, &right);
+
+        // check in sigma values > 0
+        for (auto s : sigma) {
+            EXPECT_TRUE(s >= 0);
+        }
+
+        std::vector<Complex> sigma_complex;
+        for (auto s : sigma) {
+            sigma_complex.push_back(Complex(s));
+        }
+
+        int mx = std::max(A.height(), A.width());
+
+        EXPECT_TRUE(details::is_unitary(left, eps));
+        EXPECT_TRUE(details::is_unitary(right, eps));
+        EXPECT_TRUE(details::is_zero(
+            left * Matrix::diagonal(sigma_complex, A.height(), A.width()) * conjugate(right) - A, eps));
     }
 }
 

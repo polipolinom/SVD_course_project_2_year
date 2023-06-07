@@ -69,7 +69,7 @@ inline Type get_Wilkinson_shift_for_bidiagonal(const Matrix<Type>& A) {
     return get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
 }
 
-Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<Type>*, const Type);
+inline Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<Type>*, const Type);
 
 inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis, const Type eps_cmp,
                   const Type eps = constants::DEFAULT_EPSILON) {

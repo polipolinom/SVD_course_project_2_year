@@ -11,7 +11,7 @@
 
 namespace svd_computation {
 namespace details {
-void swap_columns(Matrix<long double>& A, int ind1, int ind2) {
+inline void swap_columns(Matrix<long double>& A, int ind1, int ind2) {
     assert(ind1 >= 0 && ind1 < A.width());
     assert(ind2 >= 0 && ind2 < A.width());
     for (int i = 0; i < A.height(); ++i) {
@@ -19,7 +19,7 @@ void swap_columns(Matrix<long double>& A, int ind1, int ind2) {
     }
 }
 
-void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& left_basis,
+inline void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& left_basis,
                           Matrix<long double>& right_basis) {
     for (size_t i = 0; i < sigma.height(); ++i) {
         for (size_t j = 0; j < sigma.height() - i - 1; ++j) {
@@ -34,7 +34,7 @@ void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& left_
 }  // namespace details
 
 template <typename Type>
-std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
+inline std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
                                      Matrix<Type>* right_basis = nullptr,
                                      const long double eps = constants::DEFAULT_EPSILON) {
     if (A.width() > A.height()) {

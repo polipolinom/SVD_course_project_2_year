@@ -80,7 +80,8 @@ std::vector<long double> test_precision(const std::vector<size_t> &ns) {
     return res;
 }
 
-// for work need to delete constexpr у constants::MAX_OPERATIONS
+// for work need to delete constexpr у constants::MAX_OPERATIONS and add in CmakeList executable for file
+// tests/graphic_tests.cpp
 std::vector<long double> test_precision_operations(const std::vector<size_t> &operations) {
     using Matrix = Matrix<long double>;
 
@@ -117,7 +118,8 @@ std::vector<long double> test_precision_operations(const std::vector<size_t> &op
     return res;
 }
 
-// for work need to delete constexpr у constants::DEFAULT_EPSILON
+// for work need to delete constexpr у constants::DEFAULT_EPSILON and add in CmakeList executable for file
+// tests/graphic_tests.cpp
 std::vector<long double> test_precision_epsilons(const std::vector<long double> &epsilons) {
     using Matrix = Matrix<long double>;
 
