@@ -32,6 +32,19 @@ class Matrix {
         data_ = std::vector<Type>(height * width, Type(0));
     }
 
+    Matrix(const Vector<Type>& v) {
+        assert(v.size() > 0);
+        data_ = std::vector<Type>(v.size(), Type(0));
+        for (size_t ind = 0; ind < v.size(); ++ind) {
+            data_[ind] = v[ind];
+        }
+        if (v.orientation() == Vector<Type>::Orientation::Horizontal) {
+            height_ = 1;
+        } else {
+            height_ = v.size();
+        }
+    }
+
     size_t height() const noexcept {
         return height_;
     }
