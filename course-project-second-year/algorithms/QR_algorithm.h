@@ -97,26 +97,6 @@ inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right
     return false;
 }
 
-inline void multiplyRightGivens(Matrix<Type>& A, Type c, Type s, int i, int j) {
-    for (size_t k = 0; k < A.height(); ++k) {
-        Type a = A(k, i);
-        Type b = A(k, j);
-
-        A(k, i) = c * a - s * b;
-        A(k, j) = s * a + c * b;
-    }
-}
-
-inline void multiplyLeftGivens(Matrix<Type>& A, Type c, Type s, int i, int j) {
-    for (size_t k = 0; k < A.width(); ++k) {
-        Type a = A(i, k);
-        Type b = A(j, k);
-
-        A(i, k) = c * a - s * b;
-        A(j, k) = s * a + c * b;
-    }
-}
-
 inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
                                  const Type eps_cmp, const Type eps = constants::DEFAULT_EPSILON) {
     for (size_t ind = 0; ind + 1 < A.height(); ++ind) {
@@ -124,9 +104,9 @@ inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matr
             for (size_t k = ind + 1; k < A.height(); ++k) {
                 auto [cos, sin] = get_givens_rotation(A(k, k), A(ind, k), eps);
 
-                multiplyLeftGivens(A, cos, -sin, ind, k);
+                multiply_left_givens(A, cos, -sin, ind, k);
                 if (left_basis != nullptr) {
-                    multiplyRightGivens(*left_basis, cos, -sin, ind, k);
+                    multiply_right_givens(*left_basis, cos, -sin, ind, k);
                 }
             }
             split(A, left_basis, right_basis, eps);
@@ -190,23 +170,23 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
                 auto [cos, sin] =
                     get_givens_rotation(result(0, 0) * result(0, 0) - shift, result(0, 0) * result(0, 1), eps);
 
-                multiplyRightGivens(result, cos, sin, 0, 1);
+                multiply_right_givens(result, cos, sin, 0, 1);
                 if (right_basis != nullptr) {
-                    multiplyRightGivens(*right_basis, cos, sin, 0, 1);
+                    multiply_right_givens(*right_basis, cos, sin, 0, 1);
                 }
             } else {
                 auto [cos, sin] = get_givens_rotation(result(ind - 1, ind), result(ind - 1, ind + 1), eps);
 
-                multiplyRightGivens(result, cos, sin, ind, ind + 1);
+                multiply_right_givens(result, cos, sin, ind, ind + 1);
                 if (right_basis != nullptr) {
-                    multiplyRightGivens(*right_basis, cos, sin, ind, ind + 1);
+                    multiply_right_givens(*right_basis, cos, sin, ind, ind + 1);
                 }
             }
             auto [cos, sin] = get_givens_rotation(result(ind, ind), result(ind + 1, ind), eps);
 
-            multiplyLeftGivens(result, cos, sin, ind, ind + 1);
+            multiply_left_givens(result, cos, sin, ind, ind + 1);
             if (left_basis != nullptr) {
-                multiplyRightGivens(*left_basis, cos, sin, ind, ind + 1);
+                multiply_right_givens(*left_basis, cos, sin, ind, ind + 1);
             }
         }
     }
