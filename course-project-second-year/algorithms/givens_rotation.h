@@ -1,5 +1,7 @@
 #pragma once
 #include <utility>
+#include <math.h>
+#include <cmath>
 
 #include "../types/matrix.h"
 #include "constants.h"
