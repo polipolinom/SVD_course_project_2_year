@@ -1,7 +1,8 @@
 #pragma once
-#include <utility>
 #include <math.h>
+
 #include <cmath>
+#include <utility>
 
 #include "../types/matrix.h"
 #include "constants.h"
@@ -9,10 +10,10 @@
 namespace svd_computation {
 inline std::pair<long double, long double> get_givens_rotation(long double a, long double b,
                                                                long double eps = constants::DEFAULT_EPSILON) {
-    if (abs(a) < eps) {
+    if (std::abs(a) < eps) {
         return {1.0, 0.0};
     }
-    if (abs(b) > abs(a)) {
+    if (std::abs(b) > std::abs(a)) {
         long double t = -a / b;
         return {t / sqrtl(1 + t * t), 1 / sqrtl(1 + t * t)};
     }
