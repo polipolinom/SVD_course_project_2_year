@@ -1,7 +1,7 @@
 #pragma once
 #include <utility>
 
-#include "../ types / matrix.h"
+#include "../types/matrix.h"
 
 namespace svd_computation {
 inline std::pair<long double, long double> get_givens_rotation(long double a, long double b,
