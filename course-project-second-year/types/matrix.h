@@ -1,5 +1,6 @@
 #pragma once
 
+#include <math.h>
 #include <string.h>
 
 #include <sstream>
@@ -102,13 +103,43 @@ class Matrix {
         return result;
     }
 
-    static Matrix diagonal(std::vector<Type> diagonal, int height, int width) noexcept {
+    static Matrix diagonal(std::vector<Type> diagonal, size_t height, size_t width) noexcept {
         assert(height > 0);
         assert(width > 0);
 
         Matrix result(height, width);
         for (size_t ind = 0; ind < diagonal.size(); ++ind) {
             result(ind, ind) = diagonal[ind];
+        }
+        return result;
+    }
+
+    static Matrix banded(std::vector<Type> elements, size_t height, size_t width) noexcept {
+        assert(height > 0);
+        assert(width > 0);
+        assert(elements.size() > 0);
+        assert(elements.size() <= width);
+
+        Matrix result(height, width);
+        for (size_t ind = 0; ind < elements.size(); ++ind) {
+            for (size_t h = 0; h < std::min(height, width - ind); ++h) {
+                result(h, h + ind) = elements[ind];
+            }
+        }
+        return result;
+    }
+
+    static Matrix banded(std::initializer_list<Type> elements, size_t height, size_t width) noexcept {
+        assert(height > 0);
+        assert(width > 0);
+        assert(elements.size() > 0);
+        assert(elements.size() <= width);
+
+        Matrix result(height, width);
+        for (size_t ind = 0; ind < elements.size(); ++ind) {
+            for (size_t h = 0; h < std::min(height, width - ind); ++h) {
+                result(h, h + ind) = elements.begin()[ind];
+            }
         }
         return result;
     }
