@@ -10,7 +10,7 @@
 namespace svd_computation {
 inline std::pair<long double, long double> get_givens_rotation(long double a, long double b,
                                                                long double eps = constants::DEFAULT_EPSILON) {
-    if (std::abs(a) < eps) {
+    if (std::abs(a) < eps && std::abs(b) < eps) {
         return {1.0, 0.0};
     }
     if (std::abs(b) > std::abs(a)) {

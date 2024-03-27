@@ -20,7 +20,7 @@ inline void swap_columns(Matrix<long double>& A, int ind1, int ind2) {
 }
 
 inline void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>& left_basis,
-                          Matrix<long double>& right_basis) {
+                                 Matrix<long double>& right_basis) {
     for (size_t i = 0; i < sigma.height(); ++i) {
         for (size_t j = 0; j < sigma.height() - i - 1; ++j) {
             if (sigma(j, j) < sigma(j + 1, j + 1)) {
@@ -35,11 +35,10 @@ inline void sort_singular_values(Matrix<long double>& sigma, Matrix<long double>
 
 template <typename Type>
 inline std::vector<long double> compute_svd(const Matrix<Type>& A, Matrix<Type>* left_basis = nullptr,
-                                     Matrix<Type>* right_basis = nullptr,
-                                     const long double eps = constants::DEFAULT_EPSILON) {
+                                            Matrix<Type>* right_basis = nullptr,
+                                            const long double eps = constants::DEFAULT_EPSILON) {
     if (A.width() > A.height()) {
         auto sigma = compute_svd(conjugate(A), right_basis, left_basis, eps);
-
         return sigma;
     }
 

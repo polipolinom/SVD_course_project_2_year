@@ -103,8 +103,7 @@ inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matr
         if (abs(A(ind, ind)) <= eps) {
             for (size_t k = ind + 1; k < A.height(); ++k) {
                 auto [cos, sin] = get_givens_rotation(A(k, k), A(ind, k), eps);
-
-                multiply_left_givens(A, cos, -sin, ind, k);
+                multiply_left_givens(A, cos, sin, k, ind);
                 if (left_basis != nullptr) {
                     multiply_right_givens(*left_basis, cos, -sin, ind, k);
                 }
