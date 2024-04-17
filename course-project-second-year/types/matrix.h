@@ -260,6 +260,14 @@ class Matrix {
         return *this;
     }
 
+    friend bool operator==(const Matrix& lhs, const Matrix& rhs) noexcept {
+        return lhs.data_ == rhs.data_ && lhs.height_ == rhs.height_;
+    }
+
+    friend bool operator!=(const Matrix& lhs, const Matrix& rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
     Matrix& transpose() noexcept {
         Matrix result(width(), height_);
         for (size_t row = 0; row < width(); ++row) {
