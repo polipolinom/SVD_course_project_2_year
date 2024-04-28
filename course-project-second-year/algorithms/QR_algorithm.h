@@ -34,9 +34,10 @@ Matrix<Type> get_Schur_decomposition(const Matrix<Type>& A, const Type shift = 0
     return result;
 }
 
-namespace details {
 using Type = long double;
+inline Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<Type>*, const Type);
 
+namespace details {
 inline Type get_Wilkinson_shift(const Type n_1n_1, const Type n_1n, const Type nn) {
     Type shift = nn;
     Type sigma = (n_1n_1 - nn) / 2.0;
@@ -68,8 +69,6 @@ inline Type get_Wilkinson_shift_for_bidiagonal(const Matrix<Type>& A) {
 
     return get_Wilkinson_shift(n_2n_1 * n_2n_1 + n_1n_1 * n_1n_1, n_1n_1 * n_1n, nn * nn + n_1n * n_1n);
 }
-
-inline Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>&, Matrix<Type>*, Matrix<Type>*, const Type);
 
 inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis, const Type eps_cmp,
                   const Type eps = constants::DEFAULT_EPSILON) {
@@ -114,12 +113,13 @@ inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matr
     }
     return false;
 }
+}  // namespace details
 
-Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
-                                     const Type eps = constants::DEFAULT_EPSILON) {
+inline Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
+                                            const Type eps = constants::DEFAULT_EPSILON) {
     using Matrix = Matrix<Type>;
 
-    assert(is_bidiagonal(A, eps));
+    assert(details::is_bidiagonal(A, eps));
 
     if (A.height() == 1) {
         if (left_basis != nullptr) {
@@ -146,21 +146,21 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
 
         new_eps *= eps;
 
-        if (is_diagonal(A, new_eps)) {
+        if (details::is_diagonal(A, new_eps)) {
             break;
         }
 
         operations++;
 
-        if (split(result, left_basis, right_basis, new_eps, eps)) {
+        if (details::split(result, left_basis, right_basis, new_eps, eps)) {
             return result;
         }
 
-        if (erase_small_diagonal(result, left_basis, right_basis, new_eps, eps)) {
+        if (details::erase_small_diagonal(result, left_basis, right_basis, new_eps, eps)) {
             return result;
         }
 
-        Type shift = get_Wilkinson_shift_for_bidiagonal(result);
+        Type shift = details::get_Wilkinson_shift_for_bidiagonal(result);
 
         // chasing
         for (size_t ind = 0; ind + 1 < result.height(); ++ind) {
@@ -189,8 +189,7 @@ Matrix<Type> apply_qr_for_bidiagonal(const Matrix<Type>& A, Matrix<Type>* left_b
             }
         }
     }
-    set_low_values_zero(result);
+    details::set_low_values_zero(result);
     return result;
 }
-}  // namespace details
 }  // namespace svd_computation
