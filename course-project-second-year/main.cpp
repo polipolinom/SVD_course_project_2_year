@@ -12,5 +12,5 @@ int main() {
     for (auto i : diag) {
         std::cout << i << " ";
     }
-    std::cout << (A == A) << std::endl;
+    std::cout << mult_band(A, 1, 1, A, 1, 1) << std::endl;
 }

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 
+#include <cmath>
 #include <sstream>
 #include <vector>
 
@@ -349,9 +350,9 @@ Matrix<Type> mult_band(const Matrix<Type>& A, const size_t A_low_band_width, con
     Matrix<Type> result(A.height(), B.width());
     for (int i = 0; i < A.width(); ++i) {
         for (int indA = std::max(0, i - (int)(A_low_band_width));
-             indA < std::min(A.height(), i + (int)(A_upper_band_width)); ++indA) {
+             indA < std::min((int)A.height(), i + (int)(A_upper_band_width)); ++indA) {
             for (int indB = std::max(0, indB - (int)(B_low_band_width));
-                 indB < std::min(B.width(), i + (int)(B_upper_band_width)); ++indB) {
+                 indB < std::min((int)B.width(), i + (int)(B_upper_band_width)); ++indB) {
                 result(indA, indB) += A(indA, i) * B(i, indB);
             }
         }
@@ -364,7 +365,7 @@ Matrix<Type> transpose_band(const Matrix<Type>& A, const size_t low_band_width,
                             const size_t upper_band_width) noexcept {
     Matrix<Type> result(A.width(), A.height());
     for (int i = 0; i < A.height(); ++i) {
-        for (int j = std::max(0, i - (int)(low_band_width)); j < std::min(A.width(), i + (int)(upper_band_width));
+        for (int j = std::max(0, i - (int)(low_band_width)); j < std::min((int)A.width(), i + (int)(upper_band_width));
              ++j) {
             result(j, i) = A(i, j);
         }
