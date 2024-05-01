@@ -6,11 +6,7 @@
 using namespace svd_computation;
 
 int main() {
-    Matrix<long double> A = {
-        {0.177341, -2.55219, -0.00371925}, {0.177341, -2.55219, -0.00371925}, {0, 0.00265251, -2.56133}};
-    auto diag = compute_svd(A);
-    for (auto i : diag) {
-        std::cout << i << " ";
-    }
-    std::cout << mult_band(A, 1, 1, A, 1, 1) << std::endl;
+    Matrix<long double> A = {{0.177341, -2.55219, 0}, {0, -2.55219, -0.00371925}, {0, 0, -2.56133}};
+    std::cout << transpose(A) * A << std::endl << std::endl;
+    std::cout << mult_band(transpose(A), 2, 1, A, 1, 2) << std::endl;
 }
