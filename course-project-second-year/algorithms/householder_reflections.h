@@ -2,6 +2,7 @@
 
 #include "../types/complex.h"
 #include "../types/matrix.h"
+#include "constants.h"
 
 namespace svd_computation {
 namespace details {
