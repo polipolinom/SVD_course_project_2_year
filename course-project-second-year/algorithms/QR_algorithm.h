@@ -99,7 +99,7 @@ inline Type split(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right
 inline bool erase_small_diagonal(Matrix<Type>& A, Matrix<Type>* left_basis, Matrix<Type>* right_basis,
                                  const Type eps_cmp, const Type eps = constants::DEFAULT_EPSILON) {
     for (size_t ind = 0; ind + 1 < A.height(); ++ind) {
-        if (abs(A(ind, ind)) <= eps) {
+        if (abs(A(ind, ind)) <= eps_cmp) {
             for (size_t k = ind + 1; k < A.height(); ++k) {
                 auto [cos, sin] = get_givens_rotation(A(k, k), A(ind, k), eps);
                 multiply_left_givens(A, cos, sin, k, ind);
