@@ -1,0 +1,6 @@
+[submodule "course-project-second-year/eigen"]
+	path = course-project-second-year/eigen
+	url = https://gitlab.com/libeigen/eigen/
+[submodule "eigen"]
+	path = eigen
+	url = https://gitlab.com/libeigen/eigen/
